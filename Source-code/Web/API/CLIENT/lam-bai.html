@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Làm bài thi - Hệ thống thi trắc nghiệm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            padding-bottom: 70px;
+        }
+        .main-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .question-container {
+            padding: 20px;
+        }
+        .question {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .question-content {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .answer-option {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .answer-option:hover {
+            background-color: #f8f9fa;
+        }
+        .answer-option.selected {
+            background-color: #cfe2ff;
+            border-color: #9ec5fe;
+        }
+        .countdown {
+            font-size: 20px;
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-container">
+            <div class="header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 id="deThi">Đề thi</h4>
+                    <p class="mb-0 text-muted" id="thiSinhInfo">Thí sinh: </p>
+                </div>
+                <div class="countdown" id="countdown"></div>
+            </div>
+            
+            <div class="question-container" id="questionContainer">
+                <!-- Câu hỏi sẽ được thêm vào đây bằng JavaScript -->
+                <div class="text-center p-5">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-2">Đang tải đề thi...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span id="questionCount">0/0</span> câu hỏi
+                </div>
+                <div>
+                    <button id="submitButton" class="btn btn-primary">Nộp bài</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="loading" id="loading" style="display: none;">
+        <div class="text-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Đang xử lý...</span>
+            </div>
+            <h5 class="mt-3">Đang nộp bài...</h5>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Kiểm tra đăng nhập
+            const thiSinhData = localStorage.getItem('thiSinh');
+            const kyThiData = localStorage.getItem('kyThi');
+            const deThiData = localStorage.getItem('deThi');
+            
+            if (!thiSinhData || !kyThiData || !deThiData) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const thiSinh = JSON.parse(thiSinhData);
+            const kyThi = JSON.parse(kyThiData);
+            const deThi = JSON.parse(deThiData);
+            
+            // Hiển thị thông tin
+            document.getElementById('deThi').textContent = deThi.tenDeThi;
+            document.getElementById('thiSinhInfo').textContent = `Thí sinh: ${thiSinh.hoTen} - SBD: ${thiSinh.soBaoDanh}`;
+            
+            // Biến lưu trữ câu hỏi và đáp án
+            let questions = [];
+            let answers = {}; // Đáp án của thí sinh
+            
+            // Biến lưu thời gian bắt đầu làm bài
+            const startTime = new Date();
+            const endTime = new Date(startTime.getTime() + deThi.thoiGianLamBai * 60 * 1000);
+            
+            // Cập nhật đếm ngược
+            function updateCountdown() {
+                const now = new Date();
+                const timeLeft = endTime - now;
+                
+                if (timeLeft <= 0) {
+                    document.getElementById('countdown').textContent = 'Hết giờ';
+                    submitExam();
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                document.getElementById('countdown').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // Cập nhật đếm ngược mỗi giây
+            updateCountdown();
+            const countdownInterval = setInterval(updateCountdown, 1000);
+            
+            // Lấy đề thi
+            fetch(`/API/lam-bai/?soBaoDanhId=${thiSinh.soBaoDanhId}&deThiId=${deThi.id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        questions = data.data.cauHoi;
+                        renderQuestions();
+                    } else {
+                        alert(data.message || 'Không thể tải đề thi');
+                        window.location.href = 'home.html';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Lỗi kết nối đến máy chủ');
+                    window.location.href = 'home.html';
+                });
+            
+            // Hiển thị câu hỏi
+            function renderQuestions() {
+                const container = document.getElementById('questionContainer');
+                container.innerHTML = '';
+                
+                questions.forEach((item, index) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    questionDiv.id = `question-${item.cauHoi.id}`;
+                    
+                    const questionContent = document.createElement('div');
+                    questionContent.className = 'question-content';
+                    questionContent.innerHTML = `<strong>Câu ${index + 1}:</strong> ${item.cauHoi.noiDung}`;
+                    
+                    questionDiv.appendChild(questionContent);
+                    
+                    item.dapAn.forEach(answer => {
+                        const answerDiv = document.createElement('div');
+                        answerDiv.className = 'answer-option';
+                        answerDiv.dataset.questionId = item.cauHoi.id;
+                        answerDiv.dataset.answerId = answer.id;
+                        answerDiv.innerHTML = answer.noiDung;
+                        
+                        answerDiv.addEventListener('click', function() {
+                            // Bỏ chọn tất cả các đáp án khác của câu hỏi này
+                            document.querySelectorAll(`#question-${item.cauHoi.id} .answer-option`).forEach(el => {
+                                el.classList.remove('selected');
+                            });
+                            
+                            // Chọn đáp án này
+                            this.classList.add('selected');
+                            
+                            // Lưu đáp án
+                            answers[item.cauHoi.id] = answer.id;
+                            
+                            // Cập nhật số câu đã làm
+                            updateQuestionCount();
+                        });
+                        
+                        questionDiv.appendChild(answerDiv);
+                    });
+                    
+                    container.appendChild(questionDiv);
+                });
+                
+                // Cập nhật số câu hỏi
+                updateQuestionCount();
+            }
+            
+            // Cập nhật số câu đã làm
+            function updateQuestionCount() {
+                const answeredCount = Object.keys(answers).length;
+                const totalCount = questions.length;
+                document.getElementById('questionCount').textContent = `${answeredCount}/${totalCount}`;
+            }
+            
+            // Nộp bài
+            function submitExam() {
+                // Hiển thị loading
+                document.getElementById('loading').style.display = 'flex';
+                
+                // Dừng đếm ngược
+                clearInterval(countdownInterval);
+                
+                // Gửi đáp án lên server
+                fetch('/API/nop-bai/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        soBaoDanhId: thiSinh.soBaoDanhId,
+                        deThiId: deThi.id,
+                        dapAn: answers
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Ẩn loading
+                    document.getElementById('loading').style.display = 'none';
+                    
+                    if (data.success) {
+                        // Lưu kết quả và chuyển đến trang kết quả
+                        localStorage.setItem('ketQua', JSON.stringify(data.data.ketQua));
+                        window.location.href = 'ket-qua.html';
+                    } else {
+                        alert(data.message || 'Nộp bài thất bại');
+                    }
+                })
+                .catch(error => {
+                    // Ẩn loading
+                    document.getElementById('loading').style.display = 'none';
+                    console.error('Error:', error);
+                    alert('Lỗi kết nối đến máy chủ');
+                });
+            }
+            
+            // Bắt sự kiện nút nộp bài
+            document.getElementById('submitButton').addEventListener('click', function() {
+                const answeredCount = Object.keys(answers).length;
+                const totalCount = questions.length;
+                
+                if (answeredCount < totalCount) {
+                    const confirm = window.confirm(`Bạn mới trả lời ${answeredCount}/${totalCount} câu hỏi. Bạn có chắc chắn muốn nộp bài?`);
+                    if (!confirm) return;
+                }
+                
+                submitExam();
+            });
+        });
+    </script>
+</body>
+</html>

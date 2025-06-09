@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Hệ thống thi trắc nghiệm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .main-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-container">
+            <div class="header">
+                <h2>Hệ thống thi trắc nghiệm</h2>
+                <p class="text-muted" id="kyThiInfo">Kỳ thi: </p>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>Lưu ý:</strong> Vui lòng kiểm tra thông tin cá nhân và thông tin đề thi trước khi bắt đầu làm bài.
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Thông tin thí sinh</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Họ tên:</strong> <span id="hoTen"></span></p>
+                            <p><strong>Mã sinh viên:</strong> <span id="maSinhVien"></span></p>
+                            <p><strong>Số báo danh:</strong> <span id="soBaoDanh"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Thông tin đề thi</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Tên đề thi:</strong> <span id="tenDeThi"></span></p>
+                            <p><strong>Số câu hỏi:</strong> <span id="soCau"></span></p>
+                            <p><strong>Thời gian làm bài:</strong> <span id="thoiGianLamBai"></span> phút</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Thời gian thi</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Thời gian bắt đầu:</strong> <span id="thoiGianBatDau"></span></p>
+                    <p><strong>Thời gian kết thúc:</strong> <span id="thoiGianKetThuc"></span></p>
+                    <div class="countdown" id="countdown"></div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button id="startButton" class="btn btn-primary btn-lg">Bắt đầu làm bài</button>
+                <button id="logoutButton" class="btn btn-outline-secondary">Đăng xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Kiểm tra đăng nhập
+        document.addEventListener('DOMContentLoaded', function() {
+            const thiSinhData = localStorage.getItem('thiSinh');
+            const kyThiData = localStorage.getItem('kyThi');
+            const deThiData = localStorage.getItem('deThi');
+            
+            if (!thiSinhData || !kyThiData || !deThiData) {
+                // Nếu không có dữ liệu, chuyển về trang đăng nhập
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const thiSinh = JSON.parse(thiSinhData);
+            const kyThi = JSON.parse(kyThiData);
+            const deThi = JSON.parse(deThiData);
+            
+            // Hiển thị thông tin thí sinh
+            document.getElementById('hoTen').textContent = thiSinh.hoTen;
+            document.getElementById('maSinhVien').textContent = thiSinh.maSinhVien;
+            document.getElementById('soBaoDanh').textContent = thiSinh.soBaoDanh;
+            
+            // Hiển thị thông tin đề thi
+            document.getElementById('tenDeThi').textContent = deThi.tenDeThi;
+            document.getElementById('soCau').textContent = deThi.soCau;
+            document.getElementById('thoiGianLamBai').textContent = deThi.thoiGianLamBai;
+            
+            // Hiển thị thông tin kỳ thi
+            document.getElementById('kyThiInfo').textContent = `Kỳ thi: ${kyThi.tenKyThi} - ${kyThi.monHoc}`;
+            
+            // Định dạng thời gian
+            const formatDateTime = (dateTimeStr) => {
+                const date = new Date(dateTimeStr);
+                return date.toLocaleString('vi-VN');
+            };
+            
+            document.getElementById('thoiGianBatDau').textContent = formatDateTime(kyThi.thoiGianBatDau);
+            document.getElementById('thoiGianKetThuc').textContent = formatDateTime(kyThi.thoiGianKetThuc);
+            
+            // Đếm ngược thời gian
+            function updateCountdown() {
+                const now = new Date();
+                const ketThuc = new Date(kyThi.thoiGianKetThuc);
+                const timeLeft = ketThuc - now;
+                
+                if (timeLeft <= 0) {
+                    document.getElementById('countdown').textContent = 'Kỳ thi đã kết thúc';
+                    document.getElementById('startButton').disabled = true;
+                    return;
+                }
+                
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                document.getElementById('countdown').textContent = 
+                    `Thời gian còn lại: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // Cập nhật đếm ngược mỗi giây
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+            
+            // Bắt sự kiện nút bắt đầu làm bài
+            document.getElementById('startButton').addEventListener('click', function() {
+                window.location.href = 'lam-bai.html';
+            });
+            
+            // Bắt sự kiện nút đăng xuất
+            document.getElementById('logoutButton').addEventListener('click', function() {
+                localStorage.removeItem('thiSinh');
+                localStorage.removeItem('kyThi');
+                localStorage.removeItem('deThi');
+                window.location.href = 'login.html';
+            });
+        });
+    </script>
+</body>
+</html>
