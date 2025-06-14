@@ -1,49 +1,38 @@
 @startuml
-|Người dùng|
-start
-:Chọn chức năng Đăng nhập;
+actor "Người dùng" as User
+boundary "Giao diện" as UI
+control "Hệ thống" as System
+database "Cơ sở dữ liệu" as DB
 
-|Hệ thống|
-:Hiển thị form đăng nhập;
+User -> UI: Nhập thông tin đăng nhập
+UI -> System: Gửi thông tin đăng nhập
+System -> DB: Kiểm tra tài khoản
+DB --> System: Trả về kết quả xác minh
 
-|Người dùng|
-:Nhập tên đăng nhập và mật khẩu;
+alt Đăng nhập thành công
+    System -> UI: Đăng nhập thành công
+    UI -> User: Chuyển đến trang chính
+else Đăng nhập không thành công
+    System -> UI: Thông báo lỗi
+    UI -> User: Hiển thị lỗi đăng nhập
+end
 
-|Hệ thống|
-:Kiểm tra thông tin đăng nhập;
-if (Thông tin hợp lệ?) then (Có)
-    :Chuyển đến trang chính;
-else (Không)
-    :Thông báo lỗi;
-    stop
-endif
+User -> UI: Chọn "Đổi mật khẩu"
+UI -> System: Gửi mật khẩu cũ và mới
+System -> DB: Xác thực mật khẩu cũ
 
-|Người dùng|
-if (Muốn đổi thông tin cá nhân?) then (Có)
-    :Nhập thông tin mới;
-    |Hệ thống|
-    :Kiểm tra tính hợp lệ;
-    if (Hợp lệ?) then (Có)
-        :Cập nhật thông tin;
-        :Thông báo thành công;
-    else (Không)
-        :Thông báo lỗi;
-    endif
-endif
+alt Mật khẩu đúng
+    System -> DB: Cập nhật mật khẩu mới
+    DB --> System: Xác nhận cập nhật thành công
+    System -> UI: Thông báo đổi mật khẩu thành công
+    UI -> User: Hiển thị thành công
+else Mật khẩu sai
+    System -> UI: Thông báo lỗi
+    UI -> User: Hiển thị lỗi
+end
 
-|Người dùng|
-if (Muốn đổi mật khẩu?) then (Có)
-    :Nhập mật khẩu cũ và mật khẩu mới;
-    |Hệ thống|
-    :Xác thực mật khẩu cũ;
-    if (Mật khẩu đúng?) then (Có)
-        :Cập nhật mật khẩu;
-        :Thông báo thành công;
-    else (Không)
-        :Thông báo lỗi;
-    endif
-endif
-
-|Người dùng|
-stop
+User -> UI: Chọn "Đăng xuất"
+UI -> System: Gửi yêu cầu đăng xuất
+System -> UI: Xác nhận đăng xuất
+UI -> User: Quay lại trang đăng nhập
 @enduml
