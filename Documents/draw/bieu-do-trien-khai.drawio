@@ -1,0 +1,47 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.7 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.7">
+  <diagram name="Page-1" id="XGmWnmnQkB3VemURGSNM">
+    <mxGraphModel dx="1900" dy="621" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="uohj2aNHygEHhYgtxysW-211" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;&lt;br&gt;Máy chủ web (Web Server)&lt;/b&gt;&lt;/font&gt;" style="verticalAlign=top;align=center;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="-30" y="440" width="340" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="uohj2aNHygEHhYgtxysW-213" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;Máy thí sinh (Client)&lt;/b&gt;&lt;/font&gt;" style="verticalAlign=top;align=center;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="404.75" y="440" width="320" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="uohj2aNHygEHhYgtxysW-216" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;HTTP request&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="305.75" y="541.25" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="uohj2aNHygEHhYgtxysW-231" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endFill=0;dashed=1;" parent="1" source="uohj2aNHygEHhYgtxysW-217" target="uohj2aNHygEHhYgtxysW-219" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="z13QrSZP7ZO-xncyeZob-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;startFill=0;" edge="1" parent="1" source="uohj2aNHygEHhYgtxysW-217" target="uohj2aNHygEHhYgtxysW-225">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="uohj2aNHygEHhYgtxysW-217" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;Ứng dụng PHP&lt;/span&gt;" style="html=1;dropTarget=0;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="140" y="540" width="150" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uohj2aNHygEHhYgtxysW-218" value="" style="shape=module;jettyWidth=8;jettyHeight=4;" parent="uohj2aNHygEHhYgtxysW-217" vertex="1">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-27" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uohj2aNHygEHhYgtxysW-219" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;br&gt;Cơ sở dữ liệu MySQL&lt;/font&gt;" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.database;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="-20" y="542.5" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uohj2aNHygEHhYgtxysW-225" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Ứng dụng thi&lt;br&gt;Flutter&lt;/font&gt;" style="html=1;dropTarget=0;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="467.75" y="536.25" width="180" height="72.5" as="geometry" />
+        </mxCell>
+        <mxCell id="uohj2aNHygEHhYgtxysW-226" value="" style="shape=module;jettyWidth=8;jettyHeight=4;" parent="uohj2aNHygEHhYgtxysW-225" vertex="1">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-27" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uohj2aNHygEHhYgtxysW-232" value="&lt;span style=&quot;font-size: 13px;&quot;&gt;Đọc/ghi&lt;br&gt;dữ liệu&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="77" y="534" width="70" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

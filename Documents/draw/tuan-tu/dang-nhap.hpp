@@ -16,4 +16,23 @@ else Đăng nhập không thành công
     System -> UI: Thông báo lỗi
     UI -> User: Hiển thị lỗi đăng nhập
 end
+
+User -> UI: Chọn "Đổi mật khẩu"
+UI -> System: Gửi mật khẩu cũ và mới
+System -> DB: Xác thực mật khẩu cũ
+
+alt Mật khẩu đúng
+    System -> DB: Cập nhật mật khẩu mới
+    DB --> System: Xác nhận cập nhật thành công
+    System -> UI: Thông báo đổi mật khẩu thành công
+    UI -> User: Hiển thị thành công
+else Mật khẩu sai
+    System -> UI: Thông báo lỗi
+    UI -> User: Hiển thị lỗi
+end
+
+User -> UI: Chọn "Đăng xuất"
+UI -> System: Gửi yêu cầu đăng xuất
+System -> UI: Xác nhận đăng xuất
+UI -> User: Quay lại trang đăng nhập
 @enduml
