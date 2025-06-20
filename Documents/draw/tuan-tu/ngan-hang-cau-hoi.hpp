@@ -74,4 +74,30 @@ else Xác nhận xoá
         UI -> User: Thông báo kết quả
     end
 end
+
+User -> UI: Chọn "Nhập/Xuất câu hỏi"
+UI -> System: Hiển thị tùy chọn nhập hoặc xuất
+
+alt Nhập câu hỏi
+    User -> UI: Tải lên file Excel/CSV
+    UI -> System: Gửi file
+    System -> System: Kiểm tra định dạng và nội dung
+
+    alt File lỗi hoặc sai định dạng
+        System -> UI: Thông báo lỗi
+        UI -> User: Hiển thị lỗi
+    else File hợp lệ
+        System -> DB: Lưu câu hỏi
+        DB --> System: Xác nhận lưu
+        System -> UI: Hiển thị "Nhập thành công"
+        UI -> User: Thông báo kết quả
+    end
+
+else Xuất câu hỏi
+    System -> DB: Truy vấn danh sách câu hỏi
+    DB --> System: Dữ liệu câu hỏi
+    System -> UI: Cung cấp file tải về
+    UI -> User: Cho phép tải file
+end
+
 @enduml

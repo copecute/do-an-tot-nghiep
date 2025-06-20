@@ -75,6 +75,33 @@ if (Muốn xoá câu hỏi?) then (Có)
         endif
     endif
 endif
-|Người dùng|
+
+if (Muốn nhập/xuất câu hỏi?) then (Có)
+    :Chọn chức năng "Nhập/Xuất";
+
+    |Hệ thống|
+    :Hiển thị tùy chọn [Nhập] hoặc [Xuất];
+
+    |Người dùng|
+    if (Chọn "Nhập") then (Yes)
+        :Chọn tệp file Excel;
+        |Hệ thống|
+        :Kiểm tra định dạng và nội dung file;
+
+        if (Hợp lệ?) then (Không)
+            :Hiển thị lỗi: "Sai định dạng hoặc thiếu dữ liệu";
+        else
+            :Lưu các câu hỏi vào CSDL;
+            :Thông báo "Nhập thành công";
+        endif
+    else
+        :Nhấn "Xuất";
+        |Hệ thống|
+        :Tạo file chứa danh sách câu hỏi;
+        :Cung cấp link tải về;
+        :Thông báo "Xuất thành công";
+    endif
+endif
+
 stop
 @enduml
