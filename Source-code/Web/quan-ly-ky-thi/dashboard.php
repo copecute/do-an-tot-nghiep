@@ -198,7 +198,7 @@ include '../include/layouts/header.php';
                 <div class="card-body text-center">
                     <h1 class="display-4 text-warning mb-2"><?php echo number_format($diemTB, 2); ?></h1>
                     <h6 class="text-muted">điểm trung bình</h6>
-                    <a href="/quan-ly-ky-thi/ket-qua/thong-ke.php?kyThiId=<?php echo $kyThiId; ?>" class="btn btn-warning btn-sm mt-3">
+                    <a href="/quan-ly-ky-thi/thong-ke.php?kyThiId=<?php echo $kyThiId; ?>" class="btn btn-warning btn-sm mt-3">
                         <i class="fas fa-chart-line"></i> xem thống kê
                     </a>
                 </div>

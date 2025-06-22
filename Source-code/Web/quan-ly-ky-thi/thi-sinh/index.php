@@ -84,10 +84,7 @@ include '../../include/layouts/header.php';
                             <i class="fas fa-plus"></i> thêm thí sinh
                         </a>
                         <a href="/quan-ly-ky-thi/thi-sinh/excel/nhap.php?kyThiId=<?php echo $kyThiId; ?>" class="btn btn-success">
-                            <i class="fas fa-file-import"></i> nhập excel
-                        </a>
-                        <a href="/quan-ly-ky-thi/thi-sinh/excel/xuat.php?kyThiId=<?php echo $kyThiId; ?>" class="btn btn-info">
-                            <i class="fas fa-file-export"></i> xuất excel
+                            <i class="fas fa-file-excel"></i> Nhập/Xuất excel
                         </a>
                         <a href="/quan-ly-ky-thi/dashboard.php?id=<?php echo $kyThiId; ?>" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left"></i> quay lại

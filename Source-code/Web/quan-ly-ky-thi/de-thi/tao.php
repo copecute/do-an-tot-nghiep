@@ -182,7 +182,7 @@ include '../../include/layouts/header.php';
                                     <div class="row">
                                         <?php foreach ($dsTheLoai as $theLoai): ?>
                                         <div class="col-md-4 mb-2">
-                                            <label class="form-label"><?php echo htmlspecialchars($theLoai['tenTheLoai']); ?> (%):</label>
+                                            <label class="form-label"><?php echo htmlspecialchars((string) $theLoai['tenTheLoai'] ?? ''); ?> (%):</label>
                                             <input type="number" class="form-control" 
                                                 name="tyLeTheLoai[<?php echo $theLoai['id']; ?>]" value="0" min="0" max="100">
                                             <small class="text-muted">có sẵn: <?php echo $theLoai['soCau']; ?> câu</small>
@@ -249,7 +249,7 @@ include '../../include/layouts/header.php';
                                     </div>
                                 </td>
                                 <td><?php echo htmlspecialchars($cauHoi['noiDung']); ?></td>
-                                <td><?php echo htmlspecialchars($cauHoi['tenTheLoai']); ?></td>
+                                <td><?php echo htmlspecialchars($cauHoi['tenTheLoai'] ?? ''); ?></td>
                                 <td><?php echo htmlspecialchars($cauHoi['doKho']); ?></td>
                             </tr>
                             <?php endforeach; ?>

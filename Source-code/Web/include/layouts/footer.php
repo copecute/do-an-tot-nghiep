@@ -17,7 +17,7 @@
             </div>
         </div>
     </footer>
-    <script src="/assets/script/script.js"></script>
+    <script src="/assets/scripts/script.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

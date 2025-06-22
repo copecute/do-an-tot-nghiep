@@ -1,6 +1,6 @@
 <?php
 require_once '../../../include/config.php';
-require '../../../vendor/autoload.php';
+require_once '../../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -66,24 +66,31 @@ try {
     
     // thiết lập tiêu đề trang
     $sheet->setCellValue('A1', 'DANH SÁCH THÍ SINH');
-    $sheet->mergeCells('A1:E1');
+    $sheet->mergeCells('A1:C1');
     $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
     $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
     
     // thông tin kỳ thi
     $sheet->setCellValue('A2', 'Kỳ thi: ' . $kyThi['tenKyThi']);
-    $sheet->mergeCells('A2:E2');
+    $sheet->mergeCells('A2:C2');
     $sheet->setCellValue('A3', 'Môn học: ' . $kyThi['tenMonHoc']);
-    $sheet->mergeCells('A3:E3');
+    $sheet->mergeCells('A3:C3');
     $sheet->setCellValue('A4', 'Ngày xuất: ' . date('d/m/Y H:i:s'));
-    $sheet->mergeCells('A4:E4');
+    $sheet->mergeCells('A4:C4');
+    
+    // thông tin hướng dẫn
+    $sheet->setCellValue('A6', 'Hướng dẫn:');
+    $sheet->mergeCells('A6:C6');
+    $sheet->getStyle('A6')->getFont()->setBold(true);
+    $sheet->setCellValue('A7', '1. Chỉ cần điền mã sinh viên và họ tên');
+    $sheet->mergeCells('A7:C7');
+    $sheet->setCellValue('A8', '2. Ghi chú có thể để trống');
+    $sheet->mergeCells('A8:C8');
     
     // thiết lập tiêu đề cột
-    $sheet->setCellValue('A6', 'STT');
-    $sheet->setCellValue('B6', 'Số báo danh');
-    $sheet->setCellValue('C6', 'Mã sinh viên');
-    $sheet->setCellValue('D6', 'Họ tên');
-    $sheet->setCellValue('E6', 'Ngành');
+    $sheet->setCellValue('A10', 'Mã sinh viên');
+    $sheet->setCellValue('B10', 'Họ tên');
+    $sheet->setCellValue('C10', 'Ghi chú');
     
     // định dạng tiêu đề cột
     $headerStyle = [
@@ -102,17 +109,14 @@ try {
             'startColor' => ['rgb' => 'DDDDDD'],
         ],
     ];
-    $sheet->getStyle('A6:E6')->applyFromArray($headerStyle);
+    $sheet->getStyle('A10:C10')->applyFromArray($headerStyle);
     
     // điền dữ liệu
-    $row = 7;
-    $stt = 1;
+    $row = 11;
     foreach ($dsThiSinh as $thiSinh) {
-        $sheet->setCellValue('A' . $row, $stt++);
-        $sheet->setCellValue('B' . $row, $thiSinh['soBaoDanh']);
-        $sheet->setCellValue('C' . $row, $thiSinh['maSinhVien']);
-        $sheet->setCellValue('D' . $row, $thiSinh['hoTen']);
-        $sheet->setCellValue('E' . $row, $thiSinh['tenNganh'] ?? '');
+        $sheet->setCellValue('A' . $row, $thiSinh['maSinhVien']);
+        $sheet->setCellValue('B' . $row, $thiSinh['hoTen']);
+        $sheet->setCellValue('C' . $row, $thiSinh['ghiChu'] ?? '');
         
         // căn giữa cột STT và số báo danh
         $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
@@ -130,10 +134,10 @@ try {
             ],
         ],
     ];
-    $sheet->getStyle('A6:E' . ($row - 1))->applyFromArray($dataStyle);
+    $sheet->getStyle('A10:C' . ($row - 1))->applyFromArray($dataStyle);
     
     // tự động điều chỉnh chiều rộng cột
-    foreach (range('A', 'E') as $col) {
+    foreach (range('A', 'C') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
     

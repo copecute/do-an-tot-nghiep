@@ -1,6 +1,6 @@
 <?php
 require_once '../../../include/config.php';
-require '../../../vendor/autoload.php';
+require_once '../../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -50,37 +50,34 @@ try {
     $sheet = $spreadsheet->getActiveSheet();
     
     // thiết lập tiêu đề file
-    $sheet->setTitle('Mẫu danh sách thí sinh');
+    $sheet->setTitle('Mẫu nhập thí sinh');
     
     // thiết lập tiêu đề trang
-    $sheet->setCellValue('A1', 'MẪU DANH SÁCH THÍ SINH');
-    $sheet->mergeCells('A1:D1');
+    $sheet->setCellValue('A1', 'MẪU NHẬP DANH SÁCH THÍ SINH');
+    $sheet->mergeCells('A1:C1');
     $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
     $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
     
     // thông tin kỳ thi
     $sheet->setCellValue('A2', 'Kỳ thi: ' . $kyThi['tenKyThi']);
-    $sheet->mergeCells('A2:D2');
+    $sheet->mergeCells('A2:C2');
     $sheet->setCellValue('A3', 'Môn học: ' . $kyThi['tenMonHoc']);
-    $sheet->mergeCells('A3:D3');
+    $sheet->mergeCells('A3:C3');
     
     // hướng dẫn
     $sheet->setCellValue('A4', 'Hướng dẫn:');
-    $sheet->mergeCells('A4:D4');
+    $sheet->mergeCells('A4:C4');
     $sheet->getStyle('A4')->getFont()->setBold(true);
     
-    $sheet->setCellValue('A5', '1. Chỉ cần điền Mã sinh viên và Họ tên');
-    $sheet->mergeCells('A5:D5');
-    $sheet->setCellValue('A6', '2. Số báo danh sẽ được tạo tự động');
-    $sheet->mergeCells('A6:D6');
-    $sheet->setCellValue('A7', '3. Không thay đổi cấu trúc file mẫu');
-    $sheet->mergeCells('A7:D7');
+    $sheet->setCellValue('A5', '1. Chỉ cần điền mã sinh viên và họ tên');
+    $sheet->mergeCells('A5:C5');
+    $sheet->setCellValue('A6', '2. Ghi chú có thể để trống');
+    $sheet->mergeCells('A6:C6');
     
     // thiết lập tiêu đề cột
-    $sheet->setCellValue('A9', 'STT');
-    $sheet->setCellValue('B9', 'Mã sinh viên');
-    $sheet->setCellValue('C9', 'Họ tên');
-    $sheet->setCellValue('D9', 'Ghi chú');
+    $sheet->setCellValue('A7', 'Mã sinh viên');
+    $sheet->setCellValue('B7', 'Họ tên');
+    $sheet->setCellValue('C7', 'Ghi chú');
     
     // định dạng tiêu đề cột
     $headerStyle = [
@@ -99,25 +96,20 @@ try {
             'startColor' => ['rgb' => 'DDDDDD'],
         ],
     ];
-    $sheet->getStyle('A9:D9')->applyFromArray($headerStyle);
+    $sheet->getStyle('A7:C7')->applyFromArray($headerStyle);
     
     // điền dữ liệu mẫu
     $data = [
-        [1, 'SV001', 'Nguyễn Văn A', 'Chỉ cần điền mã sinh viên và họ tên'],
-        [2, 'SV002', 'Trần Thị B', 'Số báo danh sẽ được tạo tự động'],
-        [3, '', '', 'Thêm các dòng theo nhu cầu'],
+        ['SV001', 'Nguyễn Văn A', 'Chỉ cần điền mã sinh viên và họ tên'],
+        ['SV002', 'Trần Thị B', 'Ghi chú có thể để trống'],
+        ['', '', 'Thêm các dòng theo nhu cầu'],
     ];
     
-    $row = 10;
+    $row = 8;
     foreach ($data as $rowData) {
-        $sheet->setCellValue('A' . $row, $rowData[0]);
-        $sheet->setCellValue('B' . $row, $rowData[1]);
-        $sheet->setCellValue('C' . $row, $rowData[2]);
-        $sheet->setCellValue('D' . $row, $rowData[3]);
-        
-        // căn giữa cột STT
-        $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        
+        for ($col = 0; $col < 3; $col++) {
+            $sheet->setCellValue(chr(65 + $col) . $row, $rowData[$col]);
+        }
         $row++;
     }
     
@@ -129,7 +121,7 @@ try {
             ],
         ],
     ];
-    $sheet->getStyle('A9:D' . ($row - 1))->applyFromArray($dataStyle);
+    $sheet->getStyle('A7:C' . ($row - 1))->applyFromArray($dataStyle);
     
     // tô màu cho các ô cần nhập dữ liệu
     $fillStyle = [
@@ -138,15 +130,15 @@ try {
             'startColor' => ['rgb' => 'FFFF99'],
         ],
     ];
-    $sheet->getStyle('B10:C12')->applyFromArray($fillStyle);
+    $sheet->getStyle('A8:C' . ($row - 1))->applyFromArray($fillStyle);
     
     // tự động điều chỉnh chiều rộng cột
-    foreach (range('A', 'D') as $col) {
+    foreach (range('A', 'C') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
     
     // thiết lập header để tải file
-    $filename = "mau_danh_sach_thi_sinh.xlsx";
+    $filename = "mau_nhap_thi_sinh.xlsx";
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment;filename="' . $filename . '"');
     header('Cache-Control: max-age=0');

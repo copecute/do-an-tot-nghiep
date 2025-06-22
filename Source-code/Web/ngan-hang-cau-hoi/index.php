@@ -110,6 +110,9 @@ include '../include/layouts/header.php';
             <a href="/ngan-hang-cau-hoi/add.php" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Thêm câu hỏi mới
             </a>
+            <a href="/ngan-hang-cau-hoi/excel/nhap.php" class="btn btn-success me-2">
+                <i class="fas fa-file-excel"></i> Nhập/Xuất excel
+            </a>
         </div>
     </div>
 
