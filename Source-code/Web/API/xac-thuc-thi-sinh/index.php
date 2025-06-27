@@ -1,12 +1,6 @@
 <?php
 require_once '../../include/config.php';
-
-// thiết lập header cho API
-header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
-
+require_once '../cors.php';
 // chỉ chấp nhận phương thức POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405); // Method Not Allowed
@@ -162,7 +156,7 @@ try {
     http_response_code(200);
     echo json_encode([
         'success' => true,
-        'message' => 'xác thực thành công',
+        'message' => 'Xác thực thành công',
         'data' => [
             'thiSinh' => [
                 'soBaoDanhId' => $thiSinh['soBaoDanhId'],

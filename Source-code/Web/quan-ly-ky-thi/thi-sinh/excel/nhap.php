@@ -45,6 +45,7 @@ try {
     $thongBao = '';
     $thanhCong = 0;
     $thatBai = 0;
+    $skippedRows = [];
 
     // xử lý upload file
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['excelFile'])) {
@@ -91,6 +92,7 @@ try {
                         
                         // bỏ qua dòng trống
                         if (empty($maSinhVien) || empty($hoTen)) {
+                            $skippedRows[] = ['row' => $row, 'reason' => 'Thiếu mã sinh viên hoặc họ tên'];
                             continue;
                         }
                         
@@ -135,6 +137,7 @@ try {
                             $thanhCong++;
                         } else {
                             $thatBai++;
+                            $skippedRows[] = ['row' => $row, 'reason' => 'Thí sinh đã tồn tại trong kỳ thi'];
                         }
                     }
                     
@@ -144,6 +147,13 @@ try {
                         if ($thatBai > 0) {
                             $thongBao .= ", $thatBai thí sinh đã tồn tại";
                         }
+                        if (count($skippedRows) > 0) {
+                            $thongBao .= '<ul style="font-size:13px">';
+                            foreach ($skippedRows as $skip) {
+                                $thongBao .= '<li>Dòng ' . $skip['row'] . ': ' . htmlspecialchars($skip['reason']) . '</li>';
+                            }
+                            $thongBao .= '</ul>';
+                        }
                         $_SESSION['flash_message'] = $thongBao;
                         $_SESSION['flash_type'] = 'success';
                         
@@ -151,8 +161,24 @@ try {
                         exit;
                     } else if ($thatBai > 0) {
                         $errors[] = "tất cả $thatBai thí sinh đã tồn tại trong kỳ thi này";
+                        if (count($skippedRows) > 0) {
+                            $errMsg = '<ul style="font-size:13px">';
+                            foreach ($skippedRows as $skip) {
+                                $errMsg .= '<li>Dòng ' . $skip['row'] . ': ' . htmlspecialchars($skip['reason']) . '</li>';
+                            }
+                            $errMsg .= '</ul>';
+                            $errors[] = $errMsg;
+                        }
                     } else {
                         $errors[] = "không có dữ liệu hợp lệ trong file";
+                        if (count($skippedRows) > 0) {
+                            $errMsg = '<ul style="font-size:13px">';
+                            foreach ($skippedRows as $skip) {
+                                $errMsg .= '<li>Dòng ' . $skip['row'] . ': ' . htmlspecialchars($skip['reason']) . '</li>';
+                            }
+                            $errMsg .= '</ul>';
+                            $errors[] = $errMsg;
+                        }
                     }
                 } catch (Exception $e) {
                     $errors[] = 'lỗi xử lý file: ' . $e->getMessage();

@@ -41,7 +41,7 @@ $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENT
 $sheet->setCellValue('A2', 'Hướng dẫn:');
 $sheet->mergeCells('A2:J2');
 $sheet->getStyle('A2')->getFont()->setBold(true);
-$sheet->setCellValue('A3', '1. Độ khó: de, trungbinh, kho');
+$sheet->setCellValue('A3', '1. Độ khó: Dễ, Trung bình, Khó (không phân biệt hoa thường)');
 $sheet->mergeCells('A3:J3');
 $sheet->setCellValue('A4', '2. Đáp án đúng là số thứ tự (1-4)');
 $sheet->mergeCells('A4:J4');
@@ -83,7 +83,13 @@ foreach ($cauHoiList as $cauHoi) {
     $sheet->setCellValue('A'.$row, $cauHoi['tenMonHoc']);
     $sheet->setCellValue('B'.$row, $cauHoi['tenTheLoai']);
     $sheet->setCellValue('C'.$row, $cauHoi['noiDung']);
-    $sheet->setCellValue('D'.$row, $cauHoi['doKho']);
+    // Chuyển mã độ khó sang tiếng Việt
+    $doKhoText = [
+        'de' => 'Dễ',
+        'trungbinh' => 'Trung bình',
+        'kho' => 'Khó'
+    ];
+    $sheet->setCellValue('D'.$row, $doKhoText[$cauHoi['doKho']] ?? $cauHoi['doKho']);
     $dapan = $dsDapAn[$cauHoi['id']];
     $dapAnDung = '';
     for ($i = 0; $i < 4; $i++) {

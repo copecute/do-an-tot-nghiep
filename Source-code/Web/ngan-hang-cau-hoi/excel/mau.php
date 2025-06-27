@@ -35,7 +35,7 @@ $sheet->mergeCells('A2:I2');
 $sheet->getStyle('A2')->getFont()->setBold(true);
 $sheet->setCellValue('A3', '1. Tên môn học và thể loại phải đúng với hệ thống (không phân biệt hoa thường)');
 $sheet->mergeCells('A3:I3');
-$sheet->setCellValue('A4', '2. Độ khó: de, trungbinh, kho');
+$sheet->setCellValue('A4', '2. Độ khó: Dễ, Trung bình, Khó (không phân biệt hoa thường)');
 $sheet->mergeCells('A4:I4');
 $sheet->setCellValue('A5', '3. Đáp án đúng là số thứ tự (1-4)');
 $sheet->mergeCells('A5:I5');
@@ -76,8 +76,9 @@ $sheet->getStyle('A9:I9')->applyFromArray($headerStyle);
 
 // dữ liệu mẫu
 $data = [
-    ['Toán học', 'Trắc nghiệm', '2 + 2 = ?', 'de', '3', '4', '5', '', '2'],
-    ['Vật lý', 'Tự luận', 'Mô tả định luật II Newton', 'trungbinh', '', '', '', '', ''],
+    ['Lập trình căn bản', 'Chương 1', 'HTML là viết tắt của cụm từ nào?', 'Dễ', 'HyperText Markdown Language', 'Hyperlink and Text Markup Language', 'HyperText Markup Language', 'HyperTool Machine Language', '3'],
+    ['Lập trình căn bản', '', 'Trong lập trình, vòng lặp nào sau đây không có điều kiện ở đầu vòng?', 'Trung bình', 'for', 'while', 'do...while', 'loop', '3'],
+    ['Lập trình căn bản', '', 'Bit và Byte khác nhau thế nào?', 'Khó', 'Bit lớn hơn Byte', 'Byte bằng 2 Bit', 'Byte = 8 Bit', 'Bit = 16 Byte', '3'],
     ['', '', '', '', '', '', '', '', ''],
 ];
 $row = 10;

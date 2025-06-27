@@ -1,12 +1,6 @@
 <?php
 require_once '../../include/config.php';
-
-// thiết lập header cho API
-header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET');
-header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
-
+require_once '../cors.php';
 // chỉ chấp nhận phương thức GET
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405); // Method Not Allowed
@@ -119,15 +113,16 @@ try {
         // nếu đề thi tự động, lấy câu hỏi theo cấu hình
         // đây là phần phức tạp, cần xử lý theo logic tạo đề tự động
         // tạm thời chỉ lấy câu hỏi ngẫu nhiên theo số lượng
+        $soCau = (int)$thiSinh['soCau'];
         $stmt = $pdo->prepare('
             SELECT c.id, c.noiDung, c.doKho, c.theLoaiId, t.tenTheLoai
             FROM cauHoi c
             LEFT JOIN theLoaiCauHoi t ON c.theLoaiId = t.id
             WHERE c.monHocId = (SELECT monHocId FROM kyThi WHERE id = ?)
             ORDER BY RAND()
-            LIMIT ?
-        ');
-        $stmt->execute([$thiSinh['kyThiId'], $thiSinh['soCau']]);
+            LIMIT ' . $soCau
+        );
+        $stmt->execute([$thiSinh['kyThiId']]);
     } else {
         // nếu đề thi thủ công, lấy câu hỏi đã được chọn
         $stmt = $pdo->prepare('

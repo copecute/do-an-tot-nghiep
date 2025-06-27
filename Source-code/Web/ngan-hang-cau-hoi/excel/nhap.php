@@ -41,31 +41,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $rows = $sheet->toArray();
             $pdo->beginTransaction();
             $count = 0;
-            for ($i = 1; $i < count($rows); $i++) { // bỏ dòng tiêu đề
+            $skipped = 0;
+            $skippedRows = [];
+            for ($i = 9; $i < count($rows); $i++) { // bắt đầu từ dòng 10 (index 9)
                 $row = $rows[$i];
-                $tenMonHoc = mb_strtolower(trim($row[1] ?? ''));
-                $tenTheLoai = mb_strtolower(trim($row[2] ?? ''));
-                $noiDung = trim($row[3] ?? '');
-                $doKho = trim($row[4] ?? '');
+                $tenMonHoc = mb_strtolower(trim($row[0] ?? ''));
+                $tenTheLoai = mb_strtolower(trim($row[1] ?? ''));
+                $noiDung = trim($row[2] ?? '');
+                $doKho = trim($row[3] ?? '');
                 $dapAn = [
+                    trim($row[4] ?? ''),
                     trim($row[5] ?? ''),
                     trim($row[6] ?? ''),
-                    trim($row[7] ?? ''),
-                    trim($row[8] ?? '')
+                    trim($row[7] ?? '')
                 ];
-                $dapAnDung = intval($row[9] ?? 0) - 1;
+                $dapAnDung = intval($row[8] ?? 0) - 1;
 
-                if (!$tenMonHoc || !$noiDung || !$doKho || !$dapAn[0] || !$dapAn[1] || $dapAnDung < 0 || $dapAnDung > 3) {
-                    continue; // bỏ qua dòng lỗi
-                }
+                // Chuẩn hóa độ khó từ tiếng Việt sang mã hệ thống
+                $doKhoMap = [
+                    'dễ' => 'de',
+                    'de' => 'de',
+                    'trung bình' => 'trungbinh',
+                    'trungbinh' => 'trungbinh',
+                    'khó' => 'kho',
+                    'kho' => 'kho'
+                ];
+                $doKhoLower = mb_strtolower($doKho);
+                $doKho = $doKhoMap[$doKhoLower] ?? $doKho;
+
+                $skipReason = '';
+                if (!$tenMonHoc) $skipReason = 'Thiếu tên môn học';
+                elseif (!$noiDung) $skipReason = 'Thiếu nội dung';
+                elseif (!$doKho) $skipReason = 'Thiếu độ khó';
+                elseif (!$dapAn[0] || !$dapAn[1]) $skipReason = 'Phải có ít nhất 2 đáp án';
+                elseif ($dapAnDung < 0 || $dapAnDung > 3) $skipReason = 'Đáp án đúng không hợp lệ';
+
                 // lấy id môn học
                 $monHocId = $dsMonHoc[$tenMonHoc] ?? null;
-                if (!$monHocId) continue;
+                if (!$monHocId && !$skipReason) $skipReason = 'Tên môn học không khớp hệ thống';
                 // lấy id thể loại (có thể null)
                 $theLoaiId = null;
                 if ($tenTheLoai) {
                     $key = $monHocId . '|' . $tenTheLoai;
                     $theLoaiId = $dsTheLoai[$key] ?? null;
+                }
+                if ($skipReason) {
+                    $skipped++;
+                    $skippedRows[] = ['row' => $i+1, 'reason' => $skipReason, 'data' => $row];
+                    continue;
                 }
                 // thêm câu hỏi
                 $stmt = $pdo->prepare('INSERT INTO cauHoi (monHocId, theLoaiId, noiDung, doKho) VALUES (?, ?, ?, ?)');
@@ -81,7 +104,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $count++;
             }
             $pdo->commit();
-            $success = 'đã nhập thành công ' . $count . ' câu hỏi!';
+            $success = 'Đã nhập thành công ' . $count . ' câu hỏi!';
+            if ($skipped > 0) {
+                $success .= ' Bỏ qua ' . $skipped . ' dòng lỗi.';
+                $success .= '<ul style="font-size:13px">';
+                foreach ($skippedRows as $skip) {
+                    $success .= '<li>Dòng ' . $skip['row'] . ': ' . htmlspecialchars($skip['reason']) . '</li>';
+                }
+                $success .= '</ul>';
+            }
         } catch (Exception $e) {
             $pdo->rollBack();
             $error = 'lỗi khi nhập file: ' . $e->getMessage();

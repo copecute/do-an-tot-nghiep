@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
@@ -31,6 +34,8 @@ const List<Locale> supportedLocales = [
   Locale('en', 'US'),
 ];
 
+const String configPath = 'copecute/copecute.edudex';
+
 class Settings extends StatefulWidget {
   final bool showBackButton;
   final bool showDisconnectButton;
@@ -49,7 +54,6 @@ class _SettingsState extends State<Settings> with PageMixin {
   bool _showAdvancedSettings = false;
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  static const String ADMIN_PASSWORD = 'copecute123';
 
   void _showPasswordDialog() {
     showDialog(
@@ -77,8 +81,21 @@ class _SettingsState extends State<Settings> with PageMixin {
         actions: [
           FilledButton(
             child: const Text('Xác nhận'),
-            onPressed: () {
-              if (_passwordController.text == ADMIN_PASSWORD) {
+            onPressed: () async {
+              final inputPassword = _passwordController.text;
+              String? adminPassword;
+              try {
+                final file = File(configPath);
+                if (await file.exists()) {
+                  final content = await file.readAsString();
+                  final decoded = utf8.decode(base64.decode(content));
+                  final config = json.decode(decoded);
+                  adminPassword = config['admin_password']?.toString() ?? '';
+                }
+              } catch (_) {}
+              if (inputPassword == adminPassword &&
+                  adminPassword != null &&
+                  adminPassword.isNotEmpty) {
                 setState(() => _showAdvancedSettings = true);
                 Navigator.pop(context);
               } else {
@@ -111,98 +128,10 @@ class _SettingsState extends State<Settings> with PageMixin {
     );
   }
 
-  Future<void> _updateMaySo() async {
-    final prefs = await SharedPreferences.getInstance();
-    final currentMaySo = prefs.getString('may_so') ?? '';
-
-    final controller = TextEditingController(text: currentMaySo);
-
-    showDialog(
-      context: context,
-      builder: (context) => ContentDialog(
-        title: const Text('Cập nhật số máy'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Số máy hiện tại: '),
-            const SizedBox(height: 8),
-            TextBox(
-              controller: controller,
-              placeholder: 'Nhập số máy mới (1-99)',
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(2),
-                TextInputFormatter.withFunction((oldValue, newValue) {
-                  // kiểm tra giá trị nhập vào phải từ 1-99
-                  if (newValue.text.isEmpty) return newValue;
-                  final n = int.tryParse(newValue.text);
-                  if (n == null || n < 1 || n > 99) return oldValue;
-                  return newValue;
-                }),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          FilledButton(
-            child: const Text('Cập nhật'),
-            onPressed: () async {
-              if (controller.text.isNotEmpty) {
-                await prefs.setString('may_so', controller.text);
-                if (mounted) {
-                  Navigator.pop(context);
-                  showDialog(
-                    context: context,
-                    builder: (context) => ContentDialog(
-                      title: const Text('Thành công'),
-                      content: const Text(
-                          'Đã cập nhật số máy. Vui lòng khởi động lại ứng dụng.'),
-                      actions: [
-                        Button(
-                          child: const Text('Đóng'),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-          Button(
-            child: const Text('Hủy'),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   void dispose() {
     _passwordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _disconnectServer() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('server_url');
-    await prefs.remove('user_token');
-    await prefs.remove('user_id');
-    await prefs.remove('username');
-    await prefs.remove('email');
-    await prefs.remove('user_role');
-    print('🔌 Đã ngắt kết nối và xóa thông tin server/người dùng');
-
-    if (!mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      FluentPageRoute(builder: (context) => const SplashScreen()),
-      (route) => false,
-    );
   }
 
   @override
@@ -321,58 +250,7 @@ class _SettingsState extends State<Settings> with PageMixin {
               ),
             );
           }).reversed,
-          if (widget.showDisconnectButton) ...[
-            biggerSpacer,
-            Text('Kết nối máy chủ',
-                style: FluentTheme.of(context).typography.subtitle),
-            description(
-              content: const Text(
-                'Ngắt kết nối với máy chủ nhằm cập nhật địa chỉ máy chủ. Bạn sẽ cần đăng nhập lại.',
-              ),
-            ),
-            spacer,
-            FilledButton(
-              style: ButtonStyle(
-                backgroundColor: ButtonState.resolveWith((states) {
-                  if (states.isPressed) {
-                    return Colors.red;
-                  }
-                  return Colors.red;
-                }),
-              ),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => ContentDialog(
-                    title: const Text('Xác nhận ngắt kết nối'),
-                    content: const Text(
-                        'Bạn có chắc chắn muốn ngắt kết nối khỏi máy chủ? Ứng dụng sẽ quay về màn hình kết nối.'),
-                    actions: [
-                      FilledButton(
-                        child: const Text('Có'),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _disconnectServer();
-                        },
-                      ),
-                      Button(
-                        child: const Text('Không'),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(FluentIcons.plug_disconnected),
-                  SizedBox(width: 8),
-                  Text('Ngắt kết nối máy chủ'),
-                ],
-              ),
-            ),
-          ],
+          if (widget.showDisconnectButton) ...[],
           if (!_showAdvancedSettings) ...[
             biggerSpacer,
             FilledButton(
@@ -388,10 +266,7 @@ class _SettingsState extends State<Settings> with PageMixin {
               content: const Text('Các cài đặt dành cho quản trị viên.'),
             ),
             spacer,
-            FilledButton(
-              child: const Text('Sửa số máy'),
-              onPressed: _updateMaySo,
-            ),
+            _AdvancedConfigEditor(),
           ],
         ],
       ),
@@ -430,5 +305,245 @@ class _SettingsState extends State<Settings> with PageMixin {
         ),
       ),
     );
+  }
+}
+
+class _AdvancedConfigEditor extends StatefulWidget {
+  @override
+  State<_AdvancedConfigEditor> createState() => _AdvancedConfigEditorState();
+}
+
+class _AdvancedConfigEditorState extends State<_AdvancedConfigEditor> {
+  final _serverUrlController = TextEditingController();
+  final _timeoutController = TextEditingController();
+  final _adminPasswordController = TextEditingController();
+  bool _loading = true;
+  bool _obscureAdminPassword = true;
+  String? _pingStatus; // null, 'checking', 'success', 'fail'
+  String? _pingMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConfig();
+  }
+
+  Future<void> _loadConfig() async {
+    String defaultUrl = 'http://localhost/API';
+    int defaultTimeout = 15000;
+    try {
+      final file = File(configPath);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        final decoded = utf8.decode(base64.decode(content));
+        final config = json.decode(decoded);
+        _serverUrlController.text =
+            config['server_url']?.toString() ?? defaultUrl;
+        _timeoutController.text =
+            config['timeout']?.toString() ?? defaultTimeout.toString();
+        _adminPasswordController.text =
+            config['admin_password']?.toString() ?? '';
+      } else {
+        _serverUrlController.text = defaultUrl;
+        _timeoutController.text = defaultTimeout.toString();
+        _adminPasswordController.text = '';
+      }
+    } catch (_) {
+      _serverUrlController.text = defaultUrl;
+      _timeoutController.text = defaultTimeout.toString();
+      _adminPasswordController.text = '';
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _saveConfig() async {
+    final serverUrl = _serverUrlController.text.trim();
+    final timeout = int.tryParse(_timeoutController.text.trim()) ?? 15000;
+    final adminPassword = _adminPasswordController.text.trim();
+    if (serverUrl.isEmpty || adminPassword.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => ContentDialog(
+          title: const Text('Thiếu thông tin'),
+          content: const Text(
+              'Vui lòng nhập đầy đủ địa chỉ máy chủ và mật khẩu quản trị.'),
+          actions: [
+            Button(
+              child: const Text('Đóng'),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    final config = {
+      'server_url': serverUrl,
+      'timeout': timeout,
+      'admin_password': adminPassword,
+    };
+    try {
+      final dir = Directory('copecute');
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+      final file = File(configPath);
+      final encoded = base64.encode(utf8.encode(json.encode(config)));
+      await file.writeAsString(encoded, flush: true);
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => ContentDialog(
+            title: const Text('Thành công'),
+            content:
+                const Text('Đã lưu cấu hình. Vui lòng khởi động lại ứng dụng.'),
+            actions: [
+              Button(
+                child: const Text('Đóng'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => ContentDialog(
+            title: const Text('Lỗi'),
+            content: Text('Không thể lưu file config: $e'),
+            actions: [
+              Button(
+                child: const Text('Đóng'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _checkServerConnection() async {
+    setState(() {
+      _pingStatus = 'checking';
+      _pingMessage = null;
+    });
+    final url = _serverUrlController.text.trim();
+    if (url.isEmpty) {
+      setState(() {
+        _pingStatus = 'fail';
+        _pingMessage = 'Vui lòng nhập địa chỉ máy chủ.';
+      });
+      return;
+    }
+    try {
+      final uri =
+          Uri.parse(url.endsWith('/') ? url + 'index.php' : url + '/index.php');
+      final response = await http.get(uri).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is Map && data['message'] == 'hello world copecute') {
+          setState(() {
+            _pingStatus = 'success';
+            _pingMessage = 'Kết nối thành công!';
+          });
+          return;
+        }
+      }
+      setState(() {
+        _pingStatus = 'fail';
+        _pingMessage = 'Phản hồi không hợp lệ.';
+      });
+    } catch (e) {
+      setState(() {
+        _pingStatus = 'fail';
+        _pingMessage = 'Lỗi: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: ProgressRing());
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Địa chỉ máy chủ:'),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextBox(
+                controller: _serverUrlController,
+                placeholder: 'Nhập địa chỉ máy chủ',
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              child: const Text('Kiểm tra kết nối'),
+              onPressed: _checkServerConnection,
+            ),
+          ],
+        ),
+        if (_pingStatus == 'checking') ...[
+          SizedBox(height: 8),
+          ProgressRing(),
+          SizedBox(height: 4),
+          Text('Đang kiểm tra kết nối...'),
+        ] else if (_pingStatus == 'success') ...[
+          SizedBox(height: 8),
+          Icon(FluentIcons.accept, color: Colors.green),
+          SizedBox(height: 4),
+          Text(_pingMessage ?? 'Kết nối thành công!',
+              style: TextStyle(color: Colors.green)),
+        ] else if (_pingStatus == 'fail') ...[
+          SizedBox(height: 8),
+          Icon(FluentIcons.error, color: Colors.red),
+          SizedBox(height: 4),
+          Text(_pingMessage ?? 'Kết nối thất bại!',
+              style: TextStyle(color: Colors.red)),
+        ],
+        const SizedBox(height: 16),
+        const Text('Timeout (ms):'),
+        const SizedBox(height: 8),
+        TextBox(
+          controller: _timeoutController,
+          placeholder: 'Nhập timeout (ms)',
+          keyboardType: TextInputType.number,
+        ),
+        const SizedBox(height: 16),
+        const Text('Mật khẩu cấu hình:'),
+        const SizedBox(height: 8),
+        TextBox(
+          controller: _adminPasswordController,
+          placeholder: 'Nhập mật khẩu quản trị',
+          obscureText: _obscureAdminPassword,
+          suffix: IconButton(
+            icon: Icon(
+                _obscureAdminPassword ? FluentIcons.hide : FluentIcons.red_eye),
+            onPressed: () {
+              setState(() => _obscureAdminPassword = !_obscureAdminPassword);
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+        FilledButton(
+          child: const Text('Lưu cấu hình'),
+          onPressed: _saveConfig,
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _serverUrlController.dispose();
+    _timeoutController.dispose();
+    _adminPasswordController.dispose();
+    super.dispose();
   }
 }
