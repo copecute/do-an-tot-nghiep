@@ -1,9 +1,9 @@
 <?php
 require_once '../include/config.php';
-
+$page_title = "Sửa câu hỏi";
 // kiểm tra quyền truy cập
 if (!isset($_SESSION['user_id'])) {
-    $_SESSION['flash_message'] = 'bạn cần đăng nhập để truy cập trang này!';
+    $_SESSION['flash_message'] = 'Bạn cần đăng nhập để truy cập trang này!';
     $_SESSION['flash_type'] = 'danger';
     header('Location: /dang-nhap.php');
     exit;
@@ -14,7 +14,7 @@ $success = '';
 
 // kiểm tra id câu hỏi
 if (!isset($_GET['id']) || empty($_GET['id'])) {
-    $_SESSION['flash_message'] = 'id câu hỏi không hợp lệ!';
+    $_SESSION['flash_message'] = 'ID câu hỏi không hợp lệ!';
     $_SESSION['flash_type'] = 'danger';
     header('Location: /ngan-hang-cau-hoi');
     exit;
@@ -34,7 +34,7 @@ try {
     $cauHoi = $stmt->fetch();
 
     if (!$cauHoi) {
-        $_SESSION['flash_message'] = 'không tìm thấy câu hỏi!';
+        $_SESSION['flash_message'] = 'Không tìm thấy câu hỏi!';
         $_SESSION['flash_type'] = 'danger';
         header('Location: /ngan-hang-cau-hoi');
         exit;
@@ -45,7 +45,7 @@ try {
     $stmt->execute([$cauHoiId]);
     $dsDapAn = $stmt->fetchAll();
 } catch (PDOException $e) {
-    $error = 'lỗi: ' . $e->getMessage();
+    $error = 'Lỗi: ' . $e->getMessage();
 }
 
 // lấy danh sách môn học
@@ -59,7 +59,7 @@ try {
     ');
     $dsMonHoc = $stmt->fetchAll();
 } catch (PDOException $e) {
-    $error = 'lỗi: ' . $e->getMessage();
+    $error = 'Lỗi: ' . $e->getMessage();
     $dsMonHoc = [];
 }
 
@@ -69,27 +69,43 @@ try {
     $stmt->execute([$cauHoi['monHocId']]);
     $dsTheLoai = $stmt->fetchAll();
 } catch (PDOException $e) {
-    $error = 'lỗi: ' . $e->getMessage();
+    $error = 'Lỗi: ' . $e->getMessage();
     $dsTheLoai = [];
 }
 
 // xử lý cập nhật câu hỏi
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $monHocId = $_POST['monHocId'] ?? '';
-    $theLoaiId = !empty($_POST['theLoaiId']) ? $_POST['theLoaiId'] : null;
+    $monHocId = !empty($_POST['monHocId']) ? $_POST['monHocId'] : null;
+    $theLoaiId = isset($_POST['theLoaiId']) ? trim($_POST['theLoaiId']) : null;
     $noiDung = trim($_POST['noiDung'] ?? '');
     $doKho = $_POST['doKho'] ?? '';
     $dapAn = $_POST['dapAn'] ?? [];
     $dapAnDung = $_POST['dapAnDung'] ?? '';
-    $dapAnId = $_POST['dapAnId'] ?? []; // id của các đáp án hiện tại
+    $dapAnId = $_POST['dapAnId'] ?? [];
+
+    // Xử lý theLoaiId: nếu rỗng thì null, nếu là chuỗi thì insert vào bảng theloaicauhoi lấy id
+    if ($theLoaiId === '' || $theLoaiId === null) {
+        $theLoaiId = null;
+    } elseif (!is_numeric($theLoaiId)) {
+        $stmt = $pdo->prepare("SELECT id FROM theloaicauhoi WHERE tenTheLoai = ? AND monHocId = ?");
+        $stmt->execute([$theLoaiId, $monHocId]);
+        $row = $stmt->fetch();
+        if ($row) {
+            $theLoaiId = $row['id'];
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO theloaicauhoi (tenTheLoai, monHocId) VALUES (?, ?)");
+            $stmt->execute([$theLoaiId, $monHocId]);
+            $theLoaiId = $pdo->lastInsertId();
+        }
+    }
 
     // validate dữ liệu
     if (empty($monHocId) || empty($noiDung) || empty($doKho) || empty($dapAn)) {
-        $error = 'vui lòng nhập đầy đủ thông tin bắt buộc!';
+        $error = 'Vui lòng nhập đầy đủ thông tin bắt buộc!';
     } elseif (count($dapAn) < 2) {
-        $error = 'phải có ít nhất 2 đáp án!';
+        $error = 'Phải có ít nhất 2 đáp án!';
     } elseif ($dapAnDung === '') {
-        $error = 'phải chọn 1 đáp án đúng!';
+        $error = 'Phải chọn 1 đáp án đúng!';
     } else {
         try {
             $pdo->beginTransaction();
@@ -133,13 +149,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $pdo->commit();
             
-            $_SESSION['flash_message'] = 'cập nhật câu hỏi thành công!';
+            $_SESSION['flash_message'] = 'Cập nhật câu hỏi thành công!';
             $_SESSION['flash_type'] = 'success';
             header('Location: /ngan-hang-cau-hoi');
             exit;
         } catch (PDOException $e) {
             $pdo->rollBack();
-            $error = 'lỗi: ' . $e->getMessage();
+            $error = 'Lỗi: ' . $e->getMessage();
         }
     }
 }
@@ -159,8 +175,13 @@ include '../include/layouts/header.php';
     <div class="row justify-content-center">
         <div class="col-12">
             <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">sửa câu hỏi</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Sửa Câu Hỏi</h5>
+                    </div>
+                    <a href="/ngan-hang-cau-hoi" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay Lại
+                    </a>
                 </div>
                 <div class="card-body">
                     <?php if ($error): ?>
@@ -170,9 +191,9 @@ include '../include/layouts/header.php';
                     <form method="post" id="formSuaCauHoi">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="monHocId" class="form-label">môn học <span class="text-danger">*</span></label>
+                                <label for="monHocId" class="form-label">Môn học <span class="text-danger">*</span></label>
                                 <select class="form-select" id="monHocId" name="monHocId" required>
-                                    <option value="">chọn môn học</option>
+                                    <option value="">Chọn môn học</option>
                                     <?php foreach ($dsMonHoc as $monHoc): ?>
                                         <option value="<?php echo $monHoc['id']; ?>" <?php echo $monHoc['id'] == $cauHoi['monHocId'] ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($monHoc['tenMonHoc'] . ' - ' . $monHoc['tenNganh']); ?>
@@ -182,29 +203,26 @@ include '../include/layouts/header.php';
                             </div>
 
                             <div class="col-md-6">
-                                <label for="theLoaiId" class="form-label">thể loại</label>
-                                <select class="form-select" id="theLoaiId" name="theLoaiId">
-                                    <option value="">chọn thể loại</option>
-                                    <?php foreach ($dsTheLoai as $theLoai): ?>
-                                        <option value="<?php echo $theLoai['id']; ?>" <?php echo $theLoai['id'] == $cauHoi['theLoaiId'] ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($theLoai['tenTheLoai']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <label for="theLoaiId" class="form-label">Thể loại</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control mb-1" id="theLoaiInput" placeholder="Chọn hoặc nhập thể loại" autocomplete="off">
+                                    <div id="theLoaiDropdown" class="dropdown-menu w-100" style="max-height:200px;overflow:auto;"></div>
+                                    <input type="hidden" name="theLoaiId" id="theLoaiId" value="<?php echo isset($cauHoi['theLoaiId']) ? htmlspecialchars($cauHoi['theLoaiId']) : '' ?>">
+                                </div>
                             </div>
 
                             <div class="col-12">
-                                <label for="noiDung" class="form-label">nội dung câu hỏi <span class="text-danger">*</span></label>
+                                <label for="noiDung" class="form-label">Nội dung câu hỏi <span class="text-danger">*</span></label>
                                 <textarea class="form-control" id="noiDung" name="noiDung" rows="3" required><?php echo htmlspecialchars($cauHoi['noiDung']); ?></textarea>
                             </div>
 
                             <div class="col-md-6">
-                                <label for="doKho" class="form-label">độ khó <span class="text-danger">*</span></label>
+                                <label for="doKho" class="form-label">Độ khó <span class="text-danger">*</span></label>
                                 <select class="form-select" id="doKho" name="doKho" required>
-                                    <option value="">chọn độ khó</option>
-                                    <option value="de" <?php echo $cauHoi['doKho'] == 'de' ? 'selected' : ''; ?>>dễ</option>
-                                    <option value="trungbinh" <?php echo $cauHoi['doKho'] == 'trungbinh' ? 'selected' : ''; ?>>trung bình</option>
-                                    <option value="kho" <?php echo $cauHoi['doKho'] == 'kho' ? 'selected' : ''; ?>>khó</option>
+                                    <option value="">Chọn độ khó</option>
+                                    <option value="de" <?php echo $cauHoi['doKho'] == 'de' ? 'selected' : ''; ?>>Dễ</option>
+                                    <option value="trungbinh" <?php echo $cauHoi['doKho'] == 'trungbinh' ? 'selected' : ''; ?>>Trung bình</option>
+                                    <option value="kho" <?php echo $cauHoi['doKho'] == 'kho' ? 'selected' : ''; ?>>Khó</option>
                                 </select>
                             </div>
                         </div>
@@ -212,7 +230,7 @@ include '../include/layouts/header.php';
                         <hr class="my-4">
 
                         <div class="mb-3">
-                            <label class="form-label">đáp án <span class="text-danger">*</span></label>
+                            <label class="form-label">Đáp án <span class="text-danger">*</span></label>
                             <div id="dsDapAn">
                                 <?php foreach ($dsDapAn as $index => $dapAn): ?>
                                     <div class="input-group mb-2">
@@ -220,7 +238,7 @@ include '../include/layouts/header.php';
                                             <input type="radio" name="dapAnDung" value="<?php echo $index; ?>" <?php echo $dapAn['laDapAn'] ? 'checked' : ''; ?>>
                                         </div>
                                         <input type="hidden" name="dapAnId[<?php echo $index; ?>]" value="<?php echo $dapAn['id']; ?>">
-                                        <input type="text" class="form-control" name="dapAn[]" value="<?php echo htmlspecialchars($dapAn['noiDung']); ?>" placeholder="nhập đáp án...">
+                                        <input type="text" class="form-control" name="dapAn[]" value="<?php echo htmlspecialchars($dapAn['noiDung']); ?>" placeholder="Nhập đáp án...">
                                         <?php if ($index > 1): ?>
                                             <button type="button" class="btn btn-outline-danger" onclick="xoaDapAn(this)">
                                                 <i class="fas fa-times"></i>
@@ -230,13 +248,13 @@ include '../include/layouts/header.php';
                                 <?php endforeach; ?>
                             </div>
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="themDapAn()">
-                                <i class="fas fa-plus"></i> thêm đáp án
+                                <i class="fas fa-plus"></i> Thêm đáp án
                             </button>
                         </div>
 
                         <div class="text-end mt-4">
-                            <a href="/ngan-hang-cau-hoi" class="btn btn-secondary me-2">hủy</a>
-                            <button type="submit" class="btn btn-primary">lưu thay đổi</button>
+                            <a href="/ngan-hang-cau-hoi" class="btn btn-secondary me-2">Hủy</a>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
                         </div>
                     </form>
                 </div>
@@ -246,62 +264,6 @@ include '../include/layouts/header.php';
 </div>
 
 <script>
-// load thể loại khi chọn môn học
-document.getElementById('monHocId').addEventListener('change', function() {
-    const monHocId = this.value;
-    const theLoaiSelect = document.getElementById('theLoaiId');
-    
-    // xóa các option cũ
-    theLoaiSelect.innerHTML = '<option value="">chọn thể loại</option>';
-    
-    if (monHocId) {
-        // gọi ajax để lấy danh sách thể loại
-        fetch(`/ngan-hang-cau-hoi/the-loai/get.php?monHocId=${monHocId}`)
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(theLoai => {
-                    const option = document.createElement('option');
-                    option.value = theLoai.id;
-                    option.textContent = theLoai.tenTheLoai;
-                    theLoaiSelect.appendChild(option);
-                });
-            })
-            .catch(error => console.error('lỗi:', error));
-    }
-});
-
-// thêm đáp án mới
-function themDapAn() {
-    const dsDapAn = document.getElementById('dsDapAn');
-    const index = dsDapAn.children.length;
-    
-    const div = document.createElement('div');
-    div.className = 'input-group mb-2';
-    div.innerHTML = `
-        <div class="input-group-text">
-            <input type="radio" name="dapAnDung" value="${index}">
-        </div>
-        <input type="text" class="form-control" name="dapAn[]" placeholder="nhập đáp án...">
-        <button type="button" class="btn btn-outline-danger" onclick="xoaDapAn(this)">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
-    
-    dsDapAn.appendChild(div);
-}
-
-// xóa đáp án
-function xoaDapAn(button) {
-    button.closest('.input-group').remove();
-    
-    // cập nhật lại index cho các radio
-    const dsDapAn = document.getElementById('dsDapAn');
-    const radios = dsDapAn.querySelectorAll('input[type="radio"]');
-    radios.forEach((radio, index) => {
-        radio.value = index;
-    });
-}
-
 // validate form trước khi submit
 document.getElementById('formSuaCauHoi').addEventListener('submit', function(e) {
     const dapAn = document.querySelectorAll('input[name="dapAn[]"]');
@@ -315,17 +277,145 @@ document.getElementById('formSuaCauHoi').addEventListener('submit', function(e) 
     
     if (countDapAn < 2) {
         e.preventDefault();
-        alert('phải có ít nhất 2 đáp án!');
+        alert('Phải có ít nhất 2 đáp án!');
         return;
     }
     
     // kiểm tra đáp án đúng
     if (!dapAnDung) {
         e.preventDefault();
-        alert('phải chọn 1 đáp án đúng!');
+        alert('Phải chọn 1 đáp án đúng!');
         return;
     }
 });
+
+// --- Tự động load thể loại khi đã có môn học được chọn ---
+let dsTheLoai = [];
+function fetchTheLoai(monHocId, selected) {
+    if (!monHocId) return;
+    fetch('/ngan-hang-cau-hoi/the-loai/get.php?monHocId=' + monHocId)
+        .then(response => response.json())
+        .then(data => {
+            dsTheLoai = data;
+            renderTheLoaiDropdown(selected);
+        });
+}
+function renderTheLoaiDropdown(selected) {
+    const dropdown = document.getElementById('theLoaiDropdown');
+    dropdown.innerHTML = '';
+    dsTheLoai.forEach(tl => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'dropdown-item';
+        item.textContent = tl.tenTheLoai;
+        item.dataset.id = tl.id;
+        if (selected && (selected == tl.id || selected == tl.tenTheLoai)) item.classList.add('active');
+        item.onclick = function() {
+            document.getElementById('theLoaiInput').value = tl.tenTheLoai;
+            document.getElementById('theLoaiId').value = tl.id;
+            dropdown.classList.remove('show');
+        };
+        dropdown.appendChild(item);
+    });
+}
+// Hiển thị dropdown khi focus input
+const theLoaiInput = document.getElementById('theLoaiInput');
+theLoaiInput.addEventListener('focus', function() {
+    if (dsTheLoai.length) {
+        renderTheLoaiDropdown(document.getElementById('theLoaiId').value);
+        document.getElementById('theLoaiDropdown').classList.add('show');
+    }
+});
+theLoaiInput.addEventListener('input', function() {
+    const val = theLoaiInput.value.toLowerCase();
+    const dropdown = document.getElementById('theLoaiDropdown');
+    dropdown.innerHTML = '';
+    let found = false;
+    dsTheLoai.forEach(tl => {
+        if (tl.tenTheLoai.toLowerCase().includes(val)) {
+            found = true;
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'dropdown-item';
+            item.textContent = tl.tenTheLoai;
+            item.dataset.id = tl.id;
+            item.onclick = function() {
+                theLoaiInput.value = tl.tenTheLoai;
+                document.getElementById('theLoaiId').value = tl.id;
+                dropdown.classList.remove('show');
+            };
+            dropdown.appendChild(item);
+        }
+    });
+    if (!found && val) {
+        // Cho phép nhập mới
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'dropdown-item text-primary';
+        item.textContent = 'Thêm mới: ' + theLoaiInput.value;
+        item.onclick = function() {
+            document.getElementById('theLoaiId').value = theLoaiInput.value;
+            dropdown.classList.remove('show');
+        };
+        dropdown.appendChild(item);
+    }
+    dropdown.classList.add('show');
+});
+theLoaiInput.addEventListener('blur', function() {
+    setTimeout(() => document.getElementById('theLoaiDropdown').classList.remove('show'), 200);
+});
+document.getElementById('monHocId').addEventListener('change', function() {
+    theLoaiInput.value = '';
+    document.getElementById('theLoaiId').value = '';
+    fetchTheLoai(this.value, '');
+});
+// Khởi tạo nếu đã có môn học
+window.addEventListener('DOMContentLoaded', function() {
+    const monHocId = document.getElementById('monHocId').value;
+    const theLoaiId = document.getElementById('theLoaiId').value;
+    if (monHocId) fetchTheLoai(monHocId, theLoaiId);
+    if (theLoaiId) {
+        // Nếu là số, tìm tên trong dsTheLoai hoặc fetch từ server
+        if (!isNaN(theLoaiId)) {
+            fetch('/ngan-hang-cau-hoi/the-loai/get.php?monHocId=' + monHocId)
+                .then(response => response.json())
+                .then(data => {
+                    const found = data.find(tl => tl.id == theLoaiId);
+                    document.getElementById('theLoaiInput').value = found ? found.tenTheLoai : '';
+                });
+        } else {
+            document.getElementById('theLoaiInput').value = theLoaiId;
+        }
+    }
+});
+
+// Thêm đáp án mới
+function themDapAn() {
+    const dsDapAn = document.getElementById('dsDapAn');
+    const index = dsDapAn.children.length;
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = `
+        <div class="input-group-text">
+            <input type="radio" name="dapAnDung" value="${index}">
+        </div>
+        <input type="text" class="form-control" name="dapAn[]" placeholder="Nhập đáp án...">
+        <button type="button" class="btn btn-outline-danger" onclick="xoaDapAn(this)">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    dsDapAn.appendChild(div);
+}
+// Xóa đáp án
+function xoaDapAn(button) {
+    button.closest('.input-group').remove();
+    // cập nhật lại index cho các radio
+    const dsDapAn = document.getElementById('dsDapAn');
+    const radios = dsDapAn.querySelectorAll('input[type="radio"]');
+    radios.forEach((radio, index) => {
+        radio.value = index;
+    });
+}
 </script>
 
 <?php include '../include/layouts/footer.php'; ?> 

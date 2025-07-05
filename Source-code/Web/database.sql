@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 09, 2025 at 12:12 PM
+-- Generation Time: Jul 05, 2025 at 12:15 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.3.11
 
@@ -157,8 +157,7 @@ CREATE TABLE `nganh` (
 CREATE TABLE `sinhvien` (
   `id` int NOT NULL,
   `maSinhVien` varchar(100) NOT NULL,
-  `hoTen` varchar(100) NOT NULL,
-  `nganhId` int DEFAULT NULL
+  `hoTen` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -195,7 +194,7 @@ CREATE TABLE `taikhoan` (
 --
 
 INSERT INTO `taikhoan` (`id`, `tenDangNhap`, `matKhau`, `vaiTro`, `hoTen`, `email`, `trangThai`) VALUES
-(1, 'admin', '$2y$10$6TKJpisHKJTZtKEGd7H5V.73as53/.qCuVWjMGx7jR6cM2QGrRKfy', 'admin', 'Đàm Minh Giang', 'admin@minhgiangpc.com', 1);
+(1, 'admin', '$2y$10$dFh94gsjX4Vl7SC9mnrhde5CvBdZTD1Sr1rELrVQzhwOOaTLDGYTC', 'admin', 'Đàm Minh Giang', 'admin@minhgiang.pro', 1);
 
 -- --------------------------------------------------------
 
@@ -285,8 +284,7 @@ ALTER TABLE `nganh`
 --
 ALTER TABLE `sinhvien`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `maSinhVien` (`maSinhVien`),
-  ADD KEY `nganhId` (`nganhId`);
+  ADD UNIQUE KEY `maSinhVien` (`maSinhVien`);
 
 --
 -- Indexes for table `sobaodanh`
@@ -385,7 +383,7 @@ ALTER TABLE `sobaodanh`
 -- AUTO_INCREMENT for table `taikhoan`
 --
 ALTER TABLE `taikhoan`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `theloaicauhoi`
@@ -449,12 +447,6 @@ ALTER TABLE `monhoc`
 --
 ALTER TABLE `nganh`
   ADD CONSTRAINT `nganh_ibfk_1` FOREIGN KEY (`khoaId`) REFERENCES `khoa` (`id`);
-
---
--- Constraints for table `sinhvien`
---
-ALTER TABLE `sinhvien`
-  ADD CONSTRAINT `sinhvien_ibfk_1` FOREIGN KEY (`nganhId`) REFERENCES `nganh` (`id`);
 
 --
 -- Constraints for table `sobaodanh`

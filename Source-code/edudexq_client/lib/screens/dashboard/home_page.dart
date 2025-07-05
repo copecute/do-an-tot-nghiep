@@ -95,45 +95,52 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FluentTheme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark ? Colors.grey[180] : Colors.white;
+    final borderRadius = BorderRadius.circular(20);
+    final cardShadow = [
+      BoxShadow(
+        color: isDark
+            ? Colors.black.withOpacity(0.10)
+            : Colors.black.withOpacity(0.05),
+        blurRadius: 16,
+        offset: const Offset(0, 4),
+      ),
+    ];
+    final textColor = isDark ? Colors.white : Colors.black;
+    final subTextColor = isDark ? Colors.grey[120] : Colors.grey[130];
+
     if (thiSinh == null || kyThi == null || deThi == null) {
       return const Center(child: ProgressRing());
     }
+
     return Center(
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 900),
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.07),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
+        constraints: const BoxConstraints(maxWidth: 700),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Tiêu đề
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(FluentIcons.education, size: 36, color: Colors.blue),
-                  const SizedBox(width: 12),
+                  Icon(FluentIcons.education, size: 32, color: Colors.blue),
+                  const SizedBox(width: 10),
                   Text('Hệ thống thi trắc nghiệm',
-                      style: FluentTheme.of(context)
-                          .typography
-                          .titleLarge
-                          ?.copyWith(fontSize: 32)),
+                      style: theme.typography.titleLarge?.copyWith(
+                        fontSize: 28,
+                        color: textColor,
+                        fontWeight: FontWeight.w600,
+                      )),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text('Chào mừng bạn đến với hệ thống thi trực tuyến EduDexQ!',
-                  style: TextStyle(color: Colors.grey[120], fontSize: 16)),
-              const SizedBox(height: 20),
+              const SizedBox(height: 6),
+              Text('Chào mừng bạn đến với hệ thống thi cử EduDexQ!',
+                  style: TextStyle(color: subTextColor, fontSize: 15)),
+              const SizedBox(height: 18),
               InfoBar(
                 title: const Text('Lưu ý'),
                 content: const Text(
@@ -141,116 +148,136 @@ class _HomePageState extends State<HomePage> {
                 severity: InfoBarSeverity.info,
                 isLong: true,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
+
+              // Thông tin thí sinh & đề thi
               Row(
                 children: [
                   Expanded(
-                    child: Card(
-                      backgroundColor: Colors.blue.lightest,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(FluentIcons.contact,
-                                    color: Colors.blue, size: 28),
-                                const SizedBox(width: 8),
-                                const Text('Thông tin thí sinh',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18)),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text('Họ tên: ${thiSinh!['hoTen']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Mã sinh viên: ${thiSinh!['maSinhVien']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Số báo danh: ${thiSinh!['soBaoDanh']}',
-                                style: const TextStyle(fontSize: 16)),
-                          ],
-                        ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: borderRadius,
+                        boxShadow: cardShadow,
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(FluentIcons.contact,
+                                  color: Colors.blue, size: 26),
+                              const SizedBox(width: 8),
+                              Text('Thông tin thí sinh',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    color: Colors.blue,
+                                  )),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text('Họ tên: ${thiSinh!['hoTen']}',
+                              style: TextStyle(fontSize: 15, color: textColor)),
+                          Text('Mã sinh viên: ${thiSinh!['maSinhVien']}',
+                              style: TextStyle(fontSize: 15, color: textColor)),
+                          Text('Số báo danh: ${thiSinh!['soBaoDanh']}',
+                              style: TextStyle(fontSize: 15, color: textColor)),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 20),
                   Expanded(
-                    child: Card(
-                      backgroundColor: Colors.orange.lightest,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(FluentIcons.task_logo,
-                                    color: Colors.orange, size: 28),
-                                const SizedBox(width: 8),
-                                const Text('Thông tin đề thi',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18)),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text('Tên đề thi: ${deThi!['tenDeThi']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Số câu hỏi: ${deThi!['soCau']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text(
-                                'Thời gian làm bài: ${deThi!['thoiGianLamBai']} phút',
-                                style: const TextStyle(fontSize: 16)),
-                          ],
-                        ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: borderRadius,
+                        boxShadow: cardShadow,
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(FluentIcons.task_logo,
+                                  color: Colors.orange, size: 26),
+                              const SizedBox(width: 8),
+                              Text('Thông tin đề thi',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    color: Colors.orange,
+                                  )),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text('Tên đề thi: ${deThi!['tenDeThi']}',
+                              style: TextStyle(fontSize: 15, color: textColor)),
+                          Text('Số câu hỏi: ${deThi!['soCau']}',
+                              style: TextStyle(fontSize: 15, color: textColor)),
+                          Text(
+                              'Thời gian làm bài: ${deThi!['thoiGianLamBai']} phút',
+                              style: TextStyle(fontSize: 15, color: textColor)),
+                        ],
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              Card(
-                backgroundColor: Colors.green.lightest,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+              const SizedBox(height: 22),
+
+              // Thời gian thi
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: borderRadius,
+                  boxShadow: cardShadow,
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(FluentIcons.clock, color: Colors.green, size: 26),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(FluentIcons.clock,
-                              color: Colors.green, size: 28),
-                          const SizedBox(width: 8),
-                          const Text('Thời gian thi',
+                          Text('Thời gian thi',
                               style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18)),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: Colors.green)),
+                          const SizedBox(height: 8),
+                          Text(
+                              'Thời gian bắt đầu: ${_formatDateTime(kyThi!['thoiGianBatDau'])}',
+                              style: TextStyle(fontSize: 15, color: textColor)),
+                          Text(
+                              'Thời gian kết thúc: ${_formatDateTime(kyThi!['thoiGianKetThuc'])}',
+                              style: TextStyle(fontSize: 15, color: textColor)),
+                          const SizedBox(height: 6),
+                          ValueListenableBuilder<DateTime>(
+                            valueListenable: _now,
+                            builder: (context, value, _) {
+                              return Text(_countdownText(),
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green));
+                            },
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                          'Thời gian bắt đầu: ${_formatDateTime(kyThi!['thoiGianBatDau'])}',
-                          style: const TextStyle(fontSize: 16)),
-                      Text(
-                          'Thời gian kết thúc: ${_formatDateTime(kyThi!['thoiGianKetThuc'])}',
-                          style: const TextStyle(fontSize: 16)),
-                      const SizedBox(height: 8),
-                      ValueListenableBuilder<DateTime>(
-                        valueListenable: _now,
-                        builder: (context, value, _) {
-                          return Text(_countdownText(),
-                              style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green));
-                        },
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 32),
+
+              // Nút
               Row(
                 children: [
                   Expanded(
@@ -259,6 +286,8 @@ class _HomePageState extends State<HomePage> {
                         padding: ButtonState.all(
                             const EdgeInsets.symmetric(vertical: 18)),
                         backgroundColor: ButtonState.all(Colors.blue),
+                        shape: ButtonState.all(
+                            RoundedRectangleBorder(borderRadius: borderRadius)),
                       ),
                       onPressed: () {
                         Navigator.pushReplacement(
@@ -266,9 +295,7 @@ class _HomePageState extends State<HomePage> {
                           FluentPageRoute(
                             builder: (context) => QuizScreen(
                               examInfo: {
-                                'subject': {
-                                  'name': kyThi!['monHoc'],
-                                },
+                                'subject': {'name': kyThi!['monHoc']},
                                 'exam': {
                                   'name': deThi!['tenDeThi'],
                                   'duration': deThi!['thoiGianLamBai'],
@@ -280,33 +307,32 @@ class _HomePageState extends State<HomePage> {
                                   'end_time': kyThi!['thoiGianKetThuc'],
                                   'duration': deThi!['thoiGianLamBai'],
                                 },
-                                'room': {
-                                  'name': '',
-                                  'facility': '',
-                                },
-                                'test_session': {
-                                  'name': kyThi!['tenKyThi'],
-                                },
+                                'room': {'name': '', 'facility': ''},
+                                'test_session': {'name': kyThi!['tenKyThi']},
                               },
                             ),
                           ),
                         );
                       },
-                      child: Text('Bắt đầu làm bài',
-                          style: TextStyle(fontSize: 18)),
+                      child: const Text('Bắt đầu làm bài',
+                          style: TextStyle(fontSize: 18, color: Colors.white)),
                     ),
                   ),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 20),
                   Expanded(
                     child: Button(
                       style: ButtonStyle(
                         padding: ButtonState.all(
                             const EdgeInsets.symmetric(vertical: 18)),
-                        backgroundColor: ButtonState.all(Colors.grey[40]),
+                        backgroundColor: ButtonState.all(Colors.transparent),
+                        shape: ButtonState.all(RoundedRectangleBorder(
+                          borderRadius: borderRadius,
+                          side: BorderSide(color: Colors.grey[120]!),
+                        )),
                       ),
                       onPressed: _logout,
-                      child: const Text('Đăng xuất',
-                          style: TextStyle(fontSize: 16)),
+                      child: Text('Đăng xuất',
+                          style: TextStyle(fontSize: 16, color: textColor)),
                     ),
                   ),
                 ],

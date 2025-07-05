@@ -19,19 +19,23 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $kyThiId = $_GET['id'];
 
-try {
-    // kiểm tra quyền xóa
+$isAdmin = isset($_SESSION['vai_tro']) && $_SESSION['vai_tro'] === 'admin';
+if ($isAdmin) {
+    $stmt = $pdo->prepare('SELECT * FROM kyThi WHERE id = ?');
+    $stmt->execute([$kyThiId]);
+} else {
     $stmt = $pdo->prepare('SELECT * FROM kyThi WHERE id = ? AND nguoiTaoId = ?');
     $stmt->execute([$kyThiId, $_SESSION['user_id']]);
-    $kyThi = $stmt->fetch();
+}
+$kyThi = $stmt->fetch();
+if (!$kyThi) {
+    $_SESSION['flash_message'] = 'không tìm thấy kỳ thi hoặc bạn không có quyền xóa!';
+    $_SESSION['flash_type'] = 'danger';
+    header('Location: /quan-ly-ky-thi');
+    exit;
+}
 
-    if (!$kyThi) {
-        $_SESSION['flash_message'] = 'không tìm thấy kỳ thi hoặc bạn không có quyền xóa!';
-        $_SESSION['flash_type'] = 'danger';
-        header('Location: /quan-ly-ky-thi');
-        exit;
-    }
-
+try {
     // kiểm tra ràng buộc với bài thi
     $stmt = $pdo->prepare('
         SELECT COUNT(*) as count 
@@ -79,6 +83,15 @@ try {
     $pdo->rollBack();
     $_SESSION['flash_message'] = 'lỗi: ' . $e->getMessage();
     $_SESSION['flash_type'] = 'danger';
+}
+
+if ($error) {
+    $_SESSION['flash_message'] = $error;
+    $_SESSION['flash_type'] = 'danger';
+}
+if ($success) {
+    $_SESSION['flash_message'] = $success;
+    $_SESSION['flash_type'] = 'success';
 }
 
 header('Location: /quan-ly-ky-thi');

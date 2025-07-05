@@ -1,5 +1,6 @@
 <?php
 require_once '../../include/config.php';
+$page_title = "Nhập Câu Hỏi";
 include '../../include/layouts/header.php';
 require_once '../../vendor/autoload.php';
 
@@ -28,7 +29,7 @@ try {
         $dsTheLoai[$key] = $row['id'];
     }
 } catch (PDOException $e) {
-    $error = 'lỗi: ' . $e->getMessage();
+    $error = 'Lỗi: ' . $e->getMessage();
 }
 
 // xử lý khi submit form
@@ -115,19 +116,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Exception $e) {
             $pdo->rollBack();
-            $error = 'lỗi khi nhập file: ' . $e->getMessage();
+            $error = 'Lỗi khi nhập file: ' . $e->getMessage();
         }
     } else {
-        $error = 'vui lòng chọn file excel!';
+        $error = 'Vui lòng chọn file Excel!';
     }
 }
 ?>
 
 <nav aria-label="breadcrumb" class="mx-4 my-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i> Trang chủ</a></li>
-        <li class="breadcrumb-item"><a href="/ngan-hang-cau-hoi">Ngân hàng câu hỏi</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Nhập/Xuất excel</li>
+        <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i> Trang Chủ</a></li>
+        <li class="breadcrumb-item"><a href="/ngan-hang-cau-hoi">Ngân Hàng Câu Hỏi</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Nhập/Xuất Excel</li>
     </ol>
 </nav>
 
@@ -135,23 +136,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-light d-flex align-items-center">
             <i class="fas fa-file-excel me-2 text-success"></i>
-            <span class="fw-bold fs-4">công cụ nhập/xuất câu hỏi</span>
+            <span class="fw-bold fs-4">Công Cụ Nhập/Xuất Câu Hỏi</span>
         </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <div class="card h-100">
-                        <div class="card-header bg-white fw-bold fs-5">nhập dữ liệu</div>
+                        <div class="card-header bg-white fw-bold fs-5">Nhập Dữ Liệu</div>
                         <div class="card-body">
-                            <div class="mb-2">nhập dữ liệu câu hỏi từ file excel.</div>
+                            <div class="mb-2">Nhập dữ liệu câu hỏi từ file Excel.</div>
                             <form method="post" enctype="multipart/form-data">
                                 <div class="mb-3">
-                                    <label for="file_excel" class="form-label">chọn file excel</label>
+                                    <label for="file_excel" class="form-label">Chọn file Excel</label>
                                     <input type="file" class="form-control" id="file_excel" name="file_excel" accept=".xlsx,.xls">
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <a href="/ngan-hang-cau-hoi/excel/mau.php" class="btn btn-success"><i class="fas fa-download me-1"></i> tải mẫu nhập</a>
-                                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-1"></i> nhập dữ liệu</button>
+                                    <a href="/ngan-hang-cau-hoi/excel/mau.php" class="btn btn-success" id="btnTaiMauNhap"><i class="fas fa-download me-1"></i> Tải Mẫu Nhập</a>
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-1"></i> Nhập Dữ Liệu</button>
                                 </div>
                             </form>
                             <?php if ($error): ?>
@@ -165,10 +166,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class="col-md-6 mb-3">
                     <div class="card h-100">
-                        <div class="card-header bg-white fw-bold fs-5">xuất dữ liệu</div>
+                        <div class="card-header bg-white fw-bold fs-5">Xuất Dữ Liệu</div>
                         <div class="card-body">
-                            <div class="mb-3">xuất dữ liệu câu hỏi ra file excel.</div>
-                            <a href="/ngan-hang-cau-hoi/excel/xuat.php" class="btn btn-success"><i class="fas fa-download me-1"></i> xuất dữ liệu</a>
+                            <div class="mb-3">Xuất dữ liệu câu hỏi ra file Excel.</div>
+                            <a href="/ngan-hang-cau-hoi/excel/xuat.php" class="btn btn-success" id="btnXuatDuLieu"><i class="fas fa-download me-1"></i> Xuất Dữ Liệu</a>
                         </div>
                     </div>
                 </div>
@@ -176,15 +177,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="row">
                 <div class="col-12">
                     <div class="card mt-3">
-                        <div class="card-header bg-white fw-bold fs-5"><i class="fas fa-info-circle text-info me-2"></i>hướng dẫn nhập dữ liệu</div>
+                        <div class="card-header bg-white fw-bold fs-5"><i class="fas fa-info-circle text-info me-2"></i>Hướng Dẫn Nhập Dữ Liệu</div>
                         <div class="card-body">
                             <ul class="mb-0">
-                                <li>tải mẫu nhập để xem cấu trúc file excel cần nhập.</li>
-                                <li>mỗi câu hỏi cần có ít nhất 2 đáp án.</li>
-                                <li>độ khó chỉ nhận các giá trị: de, trungbinh, kho.</li>
-                                <li>đáp án đúng là số thứ tự của đáp án (1-4).</li>
-                                <li>tên môn học và thể loại phải đúng với hệ thống.</li>
-                                <li>có thể để trống thể loại, đáp án 3, 4 nếu không dùng.</li>
+                                <li>Tải mẫu nhập để xem cấu trúc file Excel cần nhập.</li>
+                                <li>Mỗi câu hỏi cần có ít nhất 2 đáp án.</li>
+                                <li>Độ khó chỉ nhận các giá trị: de, trungbinh, kho.</li>
+                                <li>Đáp án đúng là số thứ tự của đáp án (1-4).</li>
+                                <li>Tên môn học và thể loại phải đúng với hệ thống.</li>
+                                <li>Có thể để trống thể loại, đáp án 3, 4 nếu không dùng.</li>
                             </ul>
                         </div>
                     </div>
@@ -193,5 +194,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
+
+<script>
+// Hiệu ứng loading cho nút tải mẫu nhập và xuất dữ liệu
+function addLoadingAndRedirect(btnId) {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const oldHtml = btn.innerHTML;
+            window.location.href = btn.getAttribute('href');
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-primary');
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> <span class="visually-hidden" role="status">Loading...</span>`;
+            btn.setAttribute('disabled', 'disabled');
+            setTimeout(function() {
+                btn.innerHTML = oldHtml;
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-success');
+                btn.removeAttribute('disabled');
+            }, 3000);
+        });
+    }
+}
+addLoadingAndRedirect('btnTaiMauNhap');
+addLoadingAndRedirect('btnXuatDuLieu');
+// Hiệu ứng loading cho nút nhập dữ liệu
+const formNhapCauHoiExcel = document.querySelector('form[enctype="multipart/form-data"]');
+const btnNhapCauHoiExcel = formNhapCauHoiExcel ? formNhapCauHoiExcel.querySelector('button[type="submit"]') : null;
+if (formNhapCauHoiExcel && btnNhapCauHoiExcel) {
+    formNhapCauHoiExcel.addEventListener('submit', function(e) {
+        btnNhapCauHoiExcel.disabled = true;
+        btnNhapCauHoiExcel.innerHTML = `<span class=\"spinner-border spinner-border-sm\" aria-hidden=\"true\"></span> <span class=\"visually-hidden\" role=\"status\">Loading...</span>`;
+    });
+}
+</script>
 
 <?php include '../../include/layouts/footer.php'; ?>

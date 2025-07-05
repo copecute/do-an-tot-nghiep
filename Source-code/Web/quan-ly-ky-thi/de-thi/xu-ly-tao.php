@@ -31,13 +31,14 @@ try {
     }
 
     // kiểm tra kỳ thi tồn tại và thuộc về người dùng
-    $stmt = $pdo->prepare('
-        SELECT k.*, m.id as monHocId 
-        FROM kyThi k 
-        JOIN monHoc m ON k.monHocId = m.id 
-        WHERE k.id = ? AND k.nguoiTaoId = ?
-    ');
+    $isAdmin = isset($_SESSION['vai_tro']) && $_SESSION['vai_tro'] === 'admin';
+    if ($isAdmin) {
+        $stmt = $pdo->prepare('SELECT k.*, m.id as monHocId FROM kyThi k JOIN monHoc m ON k.monHocId = m.id WHERE k.id = ?');
+        $stmt->execute([$kyThiId]);
+    } else {
+        $stmt = $pdo->prepare('SELECT k.*, m.id as monHocId FROM kyThi k JOIN monHoc m ON k.monHocId = m.id WHERE k.id = ? AND k.nguoiTaoId = ?');
     $stmt->execute([$kyThiId, $_SESSION['user_id']]);
+    }
     $kyThi = $stmt->fetch();
 
     if (!$kyThi) {

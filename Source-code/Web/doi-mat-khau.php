@@ -1,6 +1,28 @@
 <?php
+//                       _oo0oo_
+//                      o8888888o
+//                      88" . "88
+//                      (| -_- |)
+//                      0\  =  /0
+//                    ___/`---'\___
+//                  .' \\|     |// '.
+//                 / \\|||  :  |||// \
+//                / _||||| -:- |||||- \
+//               |   | \\\  -  /// |   |
+//               | \_|  ''\---/''  |_/ |
+//               \  .-\__  '-'  ___/-. /
+//             ___'. .'  /--.--\  `. .'___
+//          ."" '<  `.___\_<|>_/___.' >' "".
+//         | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+//         \  \ `_.   \_ __\ /__ _/   .-` /  /
+//     =====`-.____`.___ \_____/___.-`___.-'=====
+//                       `=---='
+//
+//     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//            amen đà phật, không bao giờ BUG
+//     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 require_once 'include/config.php';
-
+$page_title = "Đổi mật khẩu";
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['user_id'])) {
     $_SESSION['flash_message'] = 'Vui lòng đăng nhập để đổi mật khẩu!';
@@ -8,9 +30,6 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: dang-nhap.php');
     exit;
 }
-
-$error = '';
-$success = '';
 
 // Xử lý đổi mật khẩu
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,11 +39,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Kiểm tra dữ liệu đầu vào
     if (empty($matKhauCu) || empty($matKhauMoi) || empty($xacNhanMatKhau)) {
-        $error = 'Vui lòng nhập đầy đủ thông tin!';
+        $_SESSION['flash_message'] = 'Vui lòng nhập đầy đủ thông tin!';
+        $_SESSION['flash_type'] = 'danger';
+        header('Location: doi-mat-khau.php');
+        exit;
     } elseif (strlen($matKhauMoi) < 6) {
-        $error = 'Mật khẩu mới phải có ít nhất 6 ký tự!';
+        $_SESSION['flash_message'] = 'Mật khẩu mới phải có ít nhất 6 ký tự!';
+        $_SESSION['flash_type'] = 'danger';
+        header('Location: doi-mat-khau.php');
+        exit;
     } elseif ($matKhauMoi !== $xacNhanMatKhau) {
-        $error = 'Xác nhận mật khẩu không khớp!';
+        $_SESSION['flash_message'] = 'Xác nhận mật khẩu không khớp!';
+        $_SESSION['flash_type'] = 'danger';
+        header('Location: doi-mat-khau.php');
+        exit;
     } else {
         try {
             // Lấy thông tin tài khoản
@@ -33,23 +61,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch();
             
             if (!$user) {
-                $error = 'Không tìm thấy thông tin tài khoản!';
+                $_SESSION['flash_message'] = 'Không tìm thấy thông tin tài khoản!';
+                $_SESSION['flash_type'] = 'danger';
+                header('Location: doi-mat-khau.php');
+                exit;
             } elseif (!password_verify($matKhauCu, $user['matKhau'])) {
-                $error = 'Mật khẩu hiện tại không chính xác!';
+                $_SESSION['flash_message'] = 'Mật khẩu hiện tại không chính xác!';
+                $_SESSION['flash_type'] = 'danger';
+                header('Location: doi-mat-khau.php');
+                exit;
             } else {
                 // Cập nhật mật khẩu mới
                 $hashedPassword = password_hash($matKhauMoi, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare('UPDATE taiKhoan SET matKhau = ? WHERE id = ?');
                 $stmt->execute([$hashedPassword, $_SESSION['user_id']]);
                 
-                $success = 'Đổi mật khẩu thành công!';
-                
-                // Lưu thông báo vào session để hiển thị sau khi chuyển hướng
                 $_SESSION['flash_message'] = 'Đổi mật khẩu thành công!';
                 $_SESSION['flash_type'] = 'success';
+                header('Location: doi-mat-khau.php');
+                exit;
             }
         } catch (PDOException $e) {
-            $error = 'Lỗi: ' . $e->getMessage();
+            $_SESSION['flash_message'] = 'Lỗi: ' . $e->getMessage();
+            $_SESSION['flash_type'] = 'danger';
+            header('Location: doi-mat-khau.php');
+            exit;
         }
     }
 }
@@ -74,21 +110,7 @@ include 'include/layouts/header.php';
 
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <?php if ($error): ?>
-                        <div class="alert alert-danger d-flex align-items-center" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <?php echo $error; ?>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <?php if ($success): ?>
-                        <div class="alert alert-success d-flex align-items-center" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <?php echo $success; ?>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <form method="POST" action="" class="needs-validation" novalidate>
+                    <form method="POST" action="" class="needs-validation" novalidate id="formDoiMatKhau">
                         <div class="mb-3">
                             <div class="form-floating">
                                 <input type="password" class="form-control" id="matKhauCu" name="matKhauCu" 
@@ -125,7 +147,7 @@ include 'include/layouts/header.php';
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-primary btn-lg" id="btnDoiMatKhau">
                                 <i class="fas fa-save me-2"></i>Lưu thay đổi
                             </button>
                             <a href="/" class="btn btn-light">
@@ -187,6 +209,16 @@ document.querySelectorAll('input[type="password"]').forEach(input => {
     input.parentElement.style.position = 'relative'
     input.parentElement.appendChild(toggleBtn)
 })
+
+// loading khi bấm đổi mật khẩu
+const formDoiMatKhau = document.getElementById('formDoiMatKhau');
+const btnDoiMatKhau = document.getElementById('btnDoiMatKhau');
+formDoiMatKhau.addEventListener('submit', function(e) {
+    if (formDoiMatKhau.checkValidity()) {
+        btnDoiMatKhau.disabled = true;
+        btnDoiMatKhau.innerHTML = `<span class=\"spinner-border spinner-border-sm\" aria-hidden=\"true\"></span>\n            <span class=\"visually-hidden\" role=\"status\">Loading...</span>`;
+    }
+});
 </script>
 
 <?php include 'include/layouts/footer.php'; ?>

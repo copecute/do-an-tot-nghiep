@@ -1,23 +1,34 @@
-    </div>
-    </div>
-    
-    <footer class="py-2 mt-4 border-top">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
-                    <p class="mb-0 text-secondary small">EduDex &copy; <?php echo date('Y'); ?></p>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <a href="/gioi-thieu.php" class="text-decoration-none text-secondary small me-3">Giới thiệu</a>
-                    <a href="https://github.com/copecute/do-an-tot-nghiep" class="text-decoration-none text-secondary small" target="_blank">
-                        <i class="fab fa-github"></i>
-                        GitHub
-                    </a>
-                </div>
+</div> <!-- content -->
+
+<!-- Footer Start -->
+<footer class="footer">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col fs-13 text-muted text-center">
+                &copy; <script>document.write(new Date().getFullYear())</script> - Made with <i class="fa-solid fa-heart" style="color: red;"></i> by <a href="#!" class="text-reset fw-semibold">copecute</a> 
             </div>
         </div>
-    </footer>
-    <script src="/assets/scripts/script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    </div>
+</footer>
+<!-- end Footer -->
+
+</div>
+<!-- ============================================================== -->
+<!-- End Page content -->
+<!-- ============================================================== -->
+
+</div>
+<!-- END wrapper -->
+
+<!-- Vendor -->
+<script src="/assets/libs/jquery/jquery.min.js"></script>
+<script src="/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/libs/simplebar/simplebar.min.js"></script>
+    <script src="/assets/libs/node-waves/waves.min.js"></script>
+    <script src="/assets/libs/feather-icons/feather.min.js"></script>
+
+<!-- App js-->
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/copecute.js"></script>
 </body>
 </html>

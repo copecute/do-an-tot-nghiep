@@ -26,15 +26,27 @@ if (!isset($_GET['kyThiId']) || empty($_GET['kyThiId'])) {
 
 $kyThiId = $_GET['kyThiId'];
 
+$isAdmin = isset($_SESSION['vai_tro']) && $_SESSION['vai_tro'] === 'admin';
+
 try {
     // lấy thông tin kỳ thi
-    $stmt = $pdo->prepare('
-        SELECT k.*, m.tenMonHoc 
-        FROM kyThi k 
-        JOIN monHoc m ON k.monHocId = m.id 
-        WHERE k.id = ? AND k.nguoiTaoId = ?
-    ');
-    $stmt->execute([$kyThiId, $_SESSION['user_id']]);
+    if ($isAdmin) {
+        $stmt = $pdo->prepare('
+            SELECT k.*, m.tenMonHoc 
+            FROM kyThi k 
+            JOIN monHoc m ON k.monHocId = m.id 
+            WHERE k.id = ?
+        ');
+        $stmt->execute([$kyThiId]);
+    } else {
+        $stmt = $pdo->prepare('
+            SELECT k.*, m.tenMonHoc 
+            FROM kyThi k 
+            JOIN monHoc m ON k.monHocId = m.id 
+            WHERE k.id = ? AND k.nguoiTaoId = ?
+        ');
+        $stmt->execute([$kyThiId, $_SESSION['user_id']]);
+    }
     $kyThi = $stmt->fetch();
 
     if (!$kyThi) {
@@ -46,11 +58,10 @@ try {
 
     // lấy danh sách thí sinh
     $stmt = $pdo->prepare('
-        SELECT s.id, s.soBaoDanh, sv.maSinhVien, sv.hoTen, n.tenNganh,
+        SELECT s.id, s.soBaoDanh, sv.maSinhVien, sv.hoTen,
             (SELECT COUNT(*) FROM baiThi b WHERE b.soBaoDanhId = s.id) as soBaiThi
         FROM soBaoDanh s 
         JOIN sinhVien sv ON s.sinhVienId = sv.id 
-        LEFT JOIN nganh n ON sv.nganhId = n.id
         WHERE s.kyThiId = ?
         ORDER BY s.soBaoDanh
     ');

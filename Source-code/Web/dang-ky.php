@@ -1,6 +1,34 @@
 <?php
+//                       _oo0oo_
+//                      o8888888o
+//                      88" . "88
+//                      (| -_- |)
+//                      0\  =  /0
+//                    ___/`---'\___
+//                  .' \\|     |// '.
+//                 / \\|||  :  |||// \
+//                / _||||| -:- |||||- \
+//               |   | \\\  -  /// |   |
+//               | \_|  ''\---/''  |_/ |
+//               \  .-\__  '-'  ___/-. /
+//             ___'. .'  /--.--\  `. .'___
+//          ."" '<  `.___\_<|>_/___.' >' "".
+//         | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+//         \  \ `_.   \_ __\ /__ _/   .-` /  /
+//     =====`-.____`.___ \_____/___.-`___.-'=====
+//                       `=---='
+//
+//     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//            amen đà phật, không bao giờ BUG
+//     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 require_once 'include/config.php';
 
+// tắt đăng ký
+header('location: dang-nhap.php');
+exit;
+
+
+$page_title = "Đăng ký tài khoản";
 // chuyển hướng nếu đã đăng nhập
 if (isset($_SESSION['user_id'])) {
     header('Location: index.php');
@@ -65,59 +93,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include 'include/layouts/header.php';
 ?>
 
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="card-title mb-0">Đăng Ký Tài Khoản</h4>
-            </div>
-            <div class="card-body">
-                <?php if ($error): ?>
-                    <div class="alert alert-danger"><?php echo $error; ?></div>
-                <?php endif; ?>
-                
-                <?php if ($success): ?>
-                    <div class="alert alert-success"><?php echo $success; ?></div>
-                <?php endif; ?>
-                
-                <form method="post" action="">
-                    <div class="mb-3">
-                        <label for="tenDangNhap" class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="tenDangNhap" name="tenDangNhap" required>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="matKhau" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control" id="matKhau" name="matKhau" required>
-                            <div class="form-text">Mật khẩu phải có ít nhất 6 ký tự</div>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h3 class="text-center mb-4 fw-bold" style="letter-spacing:1px;">ĐĂNG KÝ TÀI KHOẢN</h3>
+                    <?php if ($error): ?>
+                        <div class="alert alert-danger text-center"> <?php echo $error; ?> </div>
+                    <?php endif; ?>
+                    <?php if ($success): ?>
+                        <div class="alert alert-success text-center"> <?php echo $success; ?> </div>
+                    <?php endif; ?>
+                    <form method="post" action="">
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" class="form-control" id="tenDangNhap" name="tenDangNhap" placeholder="Tên đăng nhập *" required>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="xacNhanMatKhau" class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control" id="xacNhanMatKhau" name="xacNhanMatKhau" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="matKhau" name="matKhau" placeholder="Mật khẩu *" required>
+                            </div>
+                            <div class="col-md-6 mb-3 input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="xacNhanMatKhau" name="xacNhanMatKhau" placeholder="Xác nhận mật khẩu *" required>
+                            </div>
                         </div>
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text"><i class="fas fa-signature"></i></span>
+                            <input type="text" class="form-control" id="hoTen" name="hoTen" placeholder="Họ và tên *" required>
+                        </div>
+                        <div class="mb-3 input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+                        </div>
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">Đăng ký</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <span>Đã có tài khoản? <a href="dang-nhap.php">Đăng nhập</a></span>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="hoTen" class="form-label">Họ và tên <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="hoTen" name="hoTen" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email">
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Đăng ký</button>
-                    </div>
-                </form>
-            </div>
-            <div class="card-footer text-center">
-                <p class="mb-0">Đã có tài khoản? <a href="dang-nhap.php">Đăng nhập</a></p>
+                </div>
             </div>
         </div>
     </div>
 </div>
+<style>
+.card { border-radius: 18px; }
+.input-group-text { background: #f5f5f5; }
+.btn-lg { font-size: 1.1rem; padding: 0.75rem 1.25rem; }
+</style>
 
 <?php include 'include/layouts/footer.php'; ?> 

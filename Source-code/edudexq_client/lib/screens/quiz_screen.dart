@@ -89,19 +89,13 @@ class _QuizScreenState extends State<QuizScreen> with WindowListener {
 
   // hàm cuộn đến câu hỏi được chọn
   void _scrollToQuestion(int index) {
-    if (_scrollController.hasClients && _questionKeys.containsKey(index)) {
-      // Lấy vị trí hiện tại của câu hỏi được chọn
-      final RenderBox renderBox =
-          _questionKeys[index]!.currentContext!.findRenderObject() as RenderBox;
-      final position = renderBox.localToGlobal(Offset.zero);
-
-      // Scroll đến vị trí của câu hỏi
-      _scrollController.animateTo(
-        _scrollController.offset +
-            position.dy -
-            250, // trừ 250 kích thước của header
+    final key = _questionKeys[index];
+    if (key != null && key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
+        alignment: 0.1,
       );
     }
   }
@@ -556,38 +550,51 @@ class _QuizScreenState extends State<QuizScreen> with WindowListener {
                             children: List.generate(
                               _questions.length,
                               (index) {
+                                // Tạo key cho mỗi câu hỏi nếu chưa có
+                                _questionKeys[index] =
+                                    _questionKeys[index] ?? GlobalKey();
                                 final q = _questions[index];
                                 final cauHoi = q['cauHoi'];
                                 final dapAnList = q['dapAn'] as List;
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Câu ${index + 1}: ${cauHoi['noiDung']}',
-                                      style: TextStyle(
-                                        color: const Color(0xFFD83B01),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: _fontSize,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    ...List.generate(dapAnList.length, (i) {
-                                      final da = dapAnList[i];
-                                      return RadioButton(
-                                        checked: _userAnswers[index] == i,
-                                        onChanged: (v) {
-                                          setState(() {
-                                            _userAnswers[index] = i;
-                                          });
-                                        },
-                                        content: Text(
-                                          '${String.fromCharCode(65 + i)}. ${da['noiDung']}',
-                                          style: TextStyle(
-                                              fontSize: _fontSize - 2),
+                                return Padding(
+                                  key: _questionKeys[
+                                      index], // Gán key cho mỗi câu hỏi
+                                  padding: const EdgeInsets.only(bottom: 32),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Câu ${index + 1}: ${cauHoi['noiDung']}',
+                                        style: TextStyle(
+                                          color: const Color(0xFFD83B01),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: _fontSize,
                                         ),
-                                      );
-                                    }),
-                                  ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      ...List.generate(dapAnList.length, (i) {
+                                        final da = dapAnList[i];
+                                        return Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 10),
+                                          child: RadioButton(
+                                            checked: _userAnswers[index] == i,
+                                            onChanged: (v) {
+                                              setState(() {
+                                                _userAnswers[index] = i;
+                                              });
+                                            },
+                                            content: Text(
+                                              '${String.fromCharCode(65 + i)}. ${da['noiDung']}',
+                                              style: TextStyle(
+                                                  fontSize: _fontSize - 2),
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  ),
                                 );
                               },
                             ),

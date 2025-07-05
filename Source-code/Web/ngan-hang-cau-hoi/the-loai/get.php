@@ -1,31 +1,15 @@
 <?php
+// Lấy danh sách thể loại theo môn học, trả về JSON
 require_once '../../include/config.php';
+header('Content-Type: application/json; charset=utf-8');
 
-// kiểm tra quyền truy cập
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'unauthorized']);
+$monHocId = isset($_GET['monHocId']) ? intval($_GET['monHocId']) : 0;
+if ($monHocId <= 0) {
+    echo json_encode([]);
     exit;
 }
 
-// kiểm tra tham số môn học
-if (!isset($_GET['monHocId']) || empty($_GET['monHocId'])) {
-    http_response_code(400);
-    echo json_encode(['error' => 'missing subject id']);
-    exit;
-}
-
-$monHocId = $_GET['monHocId'];
-
-try {
-    // lấy danh sách thể loại theo môn học
-    $stmt = $pdo->prepare('SELECT id, tenTheLoai FROM theLoaiCauHoi WHERE monHocId = ? ORDER BY tenTheLoai');
-    $stmt->execute([$monHocId]);
-    $dsTheLoai = $stmt->fetchAll();
-
-    header('Content-Type: application/json');
-    echo json_encode($dsTheLoai);
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
-} 
+$stmt = $pdo->prepare('SELECT id, tenTheLoai FROM theloaicauhoi WHERE monHocId = ? ORDER BY tenTheLoai ASC');
+$stmt->execute([$monHocId]);
+$ds = $stmt->fetchAll(PDO::FETCH_ASSOC);
+echo json_encode($ds); 

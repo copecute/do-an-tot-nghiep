@@ -68,11 +68,14 @@ $sheet->setCellValue('B7', $soDeThi);
 $sheet->setCellValue('A8', 'Tổng số bài thi đã nộp');
 $sheet->setCellValue('B8', $soBaiNop);
 $sheet->setCellValue('A9', 'Điểm trung bình');
-$sheet->setCellValue('B9', number_format($thongKeDiem['diemTB'], 2));
+$diemTB = $thongKeDiem['diemTB'] !== null ? $thongKeDiem['diemTB'] : 0;
+$sheet->setCellValue('B9', number_format($diemTB, 2));
 $sheet->setCellValue('A10', 'Điểm cao nhất');
-$sheet->setCellValue('B10', number_format($thongKeDiem['diemMax'], 2));
+$diemMax = $thongKeDiem['diemMax'] !== null ? $thongKeDiem['diemMax'] : 0;
+$sheet->setCellValue('B10', number_format($diemMax, 2));
 $sheet->setCellValue('A11', 'Điểm thấp nhất');
-$sheet->setCellValue('B11', number_format($thongKeDiem['diemMin'], 2));
+$diemMin = $thongKeDiem['diemMin'] !== null ? $thongKeDiem['diemMin'] : 0;
+$sheet->setCellValue('B11', number_format($diemMin, 2));
 
 $sheet->getStyle('A6:A11')->getFont()->setBold(true);
 

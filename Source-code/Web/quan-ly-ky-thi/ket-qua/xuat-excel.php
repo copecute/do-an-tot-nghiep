@@ -27,6 +27,9 @@ if (!isset($_GET['kyThiId']) || empty($_GET['kyThiId'])) {
 
 $kyThiId = $_GET['kyThiId'];
 
+// kiểm tra phân quyền
+$isAdmin = ($_SESSION['vai_tro'] == 'admin');
+
 // khởi tạo các biến thống kê
 $tongBaiThi = 0;
 $diemTrungBinh = 0;
@@ -38,13 +41,25 @@ $dsKetQua = [];
 
 try {
     // lấy thông tin kỳ thi
-    $stmt = $pdo->prepare('
-        SELECT k.*, m.tenMonHoc 
-        FROM kyThi k 
-        JOIN monHoc m ON k.monHocId = m.id 
-        WHERE k.id = ? AND k.nguoiTaoId = ?
-    ');
-    $stmt->execute([$kyThiId, $_SESSION['user_id']]);
+    if ($isAdmin) {
+        // Admin có thể xuất Excel tất cả kỳ thi
+        $stmt = $pdo->prepare('
+            SELECT k.*, m.tenMonHoc 
+            FROM kyThi k 
+            JOIN monHoc m ON k.monHocId = m.id 
+            WHERE k.id = ?
+        ');
+        $stmt->execute([$kyThiId]);
+    } else {
+        // Giáo viên chỉ xuất được kỳ thi mình tạo
+        $stmt = $pdo->prepare('
+            SELECT k.*, m.tenMonHoc 
+            FROM kyThi k 
+            JOIN monHoc m ON k.monHocId = m.id 
+            WHERE k.id = ? AND k.nguoiTaoId = ?
+        ');
+        $stmt->execute([$kyThiId, $_SESSION['user_id']]);
+    }
     $kyThi = $stmt->fetch();
 
     if (!$kyThi) {
@@ -56,12 +71,11 @@ try {
 
     // lấy danh sách kết quả
     $stmt = $pdo->prepare('
-        SELECT b.*, d.tenDeThi, s.soBaoDanh, sv.maSinhVien, sv.hoTen, n.tenNganh
+        SELECT b.*, d.tenDeThi, s.soBaoDanh, sv.maSinhVien, sv.hoTen
         FROM baiThi b 
         JOIN deThi d ON b.deThiId = d.id
         JOIN soBaoDanh s ON b.soBaoDanhId = s.id
         JOIN sinhVien sv ON s.sinhVienId = sv.id
-        LEFT JOIN nganh n ON sv.nganhId = n.id
         WHERE d.kyThiId = ?
         ORDER BY b.diem DESC, sv.hoTen
     ');
@@ -91,21 +105,21 @@ try {
     
     // thiết lập tiêu đề trang
     $sheet->setCellValue('A1', 'KẾT QUẢ THI');
-    $sheet->mergeCells('A1:I1');
+    $sheet->mergeCells('A1:H1');
     $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
     $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
     
     // thông tin kỳ thi
     $sheet->setCellValue('A2', 'Kỳ thi: ' . $kyThi['tenKyThi']);
-    $sheet->mergeCells('A2:I2');
+    $sheet->mergeCells('A2:H2');
     $sheet->setCellValue('A3', 'Môn học: ' . $kyThi['tenMonHoc']);
-    $sheet->mergeCells('A3:I3');
+    $sheet->mergeCells('A3:H3');
     $sheet->setCellValue('A4', 'Ngày xuất: ' . date('d/m/Y H:i:s'));
-    $sheet->mergeCells('A4:I4');
+    $sheet->mergeCells('A4:H4');
     
     // thống kê
     $sheet->setCellValue('A6', 'THỐNG KÊ');
-    $sheet->mergeCells('A6:I6');
+    $sheet->mergeCells('A6:H6');
     $sheet->getStyle('A6')->getFont()->setBold(true);
     $sheet->getStyle('A6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
     
@@ -136,11 +150,10 @@ try {
     $sheet->setCellValue('B11', 'Số báo danh');
     $sheet->setCellValue('C11', 'Mã sinh viên');
     $sheet->setCellValue('D11', 'Họ tên');
-    $sheet->setCellValue('E11', 'Ngành');
-    $sheet->setCellValue('F11', 'Đề thi');
-    $sheet->setCellValue('G11', 'Thời gian nộp');
-    $sheet->setCellValue('H11', 'Số câu đúng');
-    $sheet->setCellValue('I11', 'Điểm');
+    $sheet->setCellValue('E11', 'Đề thi');
+    $sheet->setCellValue('F11', 'Thời gian nộp');
+    $sheet->setCellValue('G11', 'Số câu đúng');
+    $sheet->setCellValue('H11', 'Điểm');
     
     // định dạng tiêu đề cột
     $headerStyle = [
@@ -159,7 +172,7 @@ try {
             'startColor' => ['rgb' => 'DDDDDD'],
         ],
     ];
-    $sheet->getStyle('A11:I11')->applyFromArray($headerStyle);
+    $sheet->getStyle('A11:H11')->applyFromArray($headerStyle);
     
     // điền dữ liệu
     $row = 12;
@@ -169,20 +182,19 @@ try {
         $sheet->setCellValue('B' . $row, $ketQua['soBaoDanh']);
         $sheet->setCellValue('C' . $row, $ketQua['maSinhVien']);
         $sheet->setCellValue('D' . $row, $ketQua['hoTen']);
-        $sheet->setCellValue('E' . $row, $ketQua['tenNganh'] ?? '');
-        $sheet->setCellValue('F' . $row, $ketQua['tenDeThi']);
-        $sheet->setCellValue('G' . $row, $ketQua['thoiGianNop'] ? date('d/m/Y H:i:s', strtotime($ketQua['thoiGianNop'])) : '');
-        $sheet->setCellValue('H' . $row, $ketQua['soCauDung'] . '/' . $ketQua['tongSoCau']);
-        $sheet->setCellValue('I' . $row, $ketQua['diem']);
+        $sheet->setCellValue('E' . $row, $ketQua['tenDeThi']);
+        $sheet->setCellValue('F' . $row, $ketQua['thoiGianNop'] ? date('d/m/Y H:i:s', strtotime($ketQua['thoiGianNop'])) : '');
+        $sheet->setCellValue('G' . $row, $ketQua['soCauDung'] . '/' . $ketQua['tongSoCau']);
+        $sheet->setCellValue('H' . $row, $ketQua['diem']);
         
         // định dạng số
-        $sheet->getStyle('I' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00);
+        $sheet->getStyle('H' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00);
         
         // tô màu điểm đạt/không đạt
         if ($ketQua['diem'] >= 5) {
-            $sheet->getStyle('I' . $row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('C6EFCE');
+            $sheet->getStyle('H' . $row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('C6EFCE');
         } else {
-            $sheet->getStyle('I' . $row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFC7CE');
+            $sheet->getStyle('H' . $row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFC7CE');
         }
         
         // căn giữa một số cột
@@ -191,7 +203,6 @@ try {
         $sheet->getStyle('C' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('G' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('H' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('I' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         
         $row++;
     }
@@ -204,10 +215,10 @@ try {
             ],
         ],
     ];
-    $sheet->getStyle('A11:I' . ($row - 1))->applyFromArray($dataStyle);
+    $sheet->getStyle('A11:H' . ($row - 1))->applyFromArray($dataStyle);
     
     // tự động điều chỉnh chiều rộng cột
-    foreach (range('A', 'I') as $col) {
+    foreach (range('A', 'H') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
     

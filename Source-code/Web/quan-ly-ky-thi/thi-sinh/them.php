@@ -1,9 +1,9 @@
 <?php
 require_once '../../include/config.php';
-
+$page_title = "Thêm thí sinh";
 // kiểm tra quyền truy cập
 if (!isset($_SESSION['user_id'])) {
-    $_SESSION['flash_message'] = 'bạn cần đăng nhập để truy cập trang này!';
+    $_SESSION['flash_message'] = 'Bạn cần đăng nhập để truy cập trang này!';
     $_SESSION['flash_type'] = 'danger';
     header('Location: /dang-nhap.php');
     exit;
@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // kiểm tra id kỳ thi
 if (!isset($_GET['kyThiId']) || empty($_GET['kyThiId'])) {
-    $_SESSION['flash_message'] = 'id kỳ thi không hợp lệ!';
+    $_SESSION['flash_message'] = 'ID kỳ thi không hợp lệ!';
     $_SESSION['flash_type'] = 'danger';
     header('Location: /quan-ly-ky-thi');
     exit;
@@ -19,20 +19,31 @@ if (!isset($_GET['kyThiId']) || empty($_GET['kyThiId'])) {
 
 $kyThiId = $_GET['kyThiId'];
 
+$isAdmin = isset($_SESSION['vai_tro']) && $_SESSION['vai_tro'] === 'admin';
+
 try {
     // lấy thông tin kỳ thi
-    $stmt = $pdo->prepare('
-        SELECT k.*, m.tenMonHoc, n.id as nganhId, n.tenNganh
-        FROM kyThi k 
-        JOIN monHoc m ON k.monHocId = m.id
-        JOIN nganh n ON m.nganhId = n.id
-        WHERE k.id = ? AND k.nguoiTaoId = ?
-    ');
-    $stmt->execute([$kyThiId, $_SESSION['user_id']]);
+    if ($isAdmin) {
+        $stmt = $pdo->prepare('
+            SELECT k.*, m.tenMonHoc
+            FROM kyThi k 
+            JOIN monHoc m ON k.monHocId = m.id
+            WHERE k.id = ?
+        ');
+        $stmt->execute([$kyThiId]);
+    } else {
+        $stmt = $pdo->prepare('
+            SELECT k.*, m.tenMonHoc
+            FROM kyThi k 
+            JOIN monHoc m ON k.monHocId = m.id
+            WHERE k.id = ? AND k.nguoiTaoId = ?
+        ');
+        $stmt->execute([$kyThiId, $_SESSION['user_id']]);
+    }
     $kyThi = $stmt->fetch();
 
     if (!$kyThi) {
-        $_SESSION['flash_message'] = 'không tìm thấy kỳ thi!';
+        $_SESSION['flash_message'] = 'Không tìm thấy kỳ thi!';
         $_SESSION['flash_type'] = 'danger';
         header('Location: /quan-ly-ky-thi');
         exit;
@@ -46,10 +57,10 @@ try {
         // validate dữ liệu
         $errors = [];
         if (empty($maSinhVien)) {
-            $errors[] = 'mã sinh viên không được để trống!';
+            $errors[] = 'Mã sinh viên không được để trống!';
         }
         if (empty($hoTen)) {
-            $errors[] = 'họ tên không được để trống!';
+            $errors[] = 'Họ tên không được để trống!';
         }
 
         if (empty($errors)) {
@@ -65,26 +76,26 @@ try {
                 // nếu sinh viên chưa tồn tại thì thêm mới
                 if (!$sinhVienId) {
                     $stmt = $pdo->prepare('
-                        INSERT INTO sinhVien (maSinhVien, hoTen, nganhId)
-                        VALUES (?, ?, ?)
+                        INSERT INTO sinhVien (maSinhVien, hoTen)
+                        VALUES (?, ?)
                     ');
-                    $stmt->execute([$maSinhVien, $hoTen, $kyThi['nganhId']]);
+                    $stmt->execute([$maSinhVien, $hoTen]);
                     $sinhVienId = $pdo->lastInsertId();
                 } else {
                     // cập nhật thông tin sinh viên nếu đã tồn tại
                     $stmt = $pdo->prepare('
                         UPDATE sinhVien
-                        SET hoTen = ?, nganhId = ?
+                        SET hoTen = ?
                         WHERE id = ?
                     ');
-                    $stmt->execute([$hoTen, $kyThi['nganhId'], $sinhVienId]);
+                    $stmt->execute([$hoTen, $sinhVienId]);
                 }
 
                 // kiểm tra sinh viên đã có số báo danh trong kỳ thi này chưa
                 $stmt = $pdo->prepare('SELECT id FROM soBaoDanh WHERE sinhVienId = ? AND kyThiId = ?');
                 $stmt->execute([$sinhVienId, $kyThiId]);
                 if ($stmt->fetchColumn()) {
-                    throw new Exception('sinh viên này đã có số báo danh trong kỳ thi!');
+                    throw new Exception('Sinh viên này đã có số báo danh trong kỳ thi!');
                 }
 
                 // tạo số báo danh tự động
@@ -100,7 +111,7 @@ try {
                 // lưu thay đổi
                 $pdo->commit();
 
-                $_SESSION['flash_message'] = 'thêm thí sinh thành công!';
+                $_SESSION['flash_message'] = 'Thêm thí sinh thành công!';
                 $_SESSION['flash_type'] = 'success';
                 header("Location: /quan-ly-ky-thi/thi-sinh/?kyThiId=$kyThiId");
                 exit;
@@ -111,7 +122,7 @@ try {
         }
     }
 } catch (PDOException $e) {
-    $error = 'lỗi: ' . $e->getMessage();
+    $error = 'Lỗi: ' . $e->getMessage();
 }
 
 /**
@@ -163,9 +174,12 @@ include '../../include/layouts/header.php';
 <nav aria-label="breadcrumb" class="mx-4 my-3">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i> Trang chủ</a></li>
-        <li class="breadcrumb-item"><a href="/quan-ly-ky-thi">Quản lý kỳ thi</a></li>
-        <li class="breadcrumb-item"><a href="/quan-ly-ky-thi/thi-sinh/?kyThiId=<?php echo $kyThiId; ?>">Quản lý thí sinh</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Thêm thí sinh</li>
+        <li class="breadcrumb-item"><a href="/quan-ly-ky-thi">Quản Lý Kỳ Thi</a></li>
+        <li class="breadcrumb-item">
+            <a href="/quan-ly-ky-thi/dashboard.php?id=<?php echo $kyThiId; ?>">Kỳ thi: <?php echo htmlspecialchars($kyThiId); ?></a>
+        </li>
+        <li class="breadcrumb-item"><a href="/quan-ly-ky-thi/thi-sinh/?kyThiId=<?php echo $kyThiId; ?>">Quản Lý Thí Sinh</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Thêm Thí Sinh</li>
     </ol>
 </nav>
 
@@ -175,64 +189,56 @@ include '../../include/layouts/header.php';
             <div class="card shadow mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="mb-0">thêm thí sinh</h5>
+                        <h5 class="mb-0">Thêm Thí Sinh</h5>
                         <p class="text-muted mb-0">
-                            kỳ thi: <?php echo htmlspecialchars($kyThi['tenKyThi']); ?> | 
-                            môn học: <?php echo htmlspecialchars($kyThi['tenMonHoc']); ?>
+                            Kỳ thi: <?php echo htmlspecialchars($kyThi['tenKyThi']); ?> | 
+                            Môn học: <?php echo htmlspecialchars($kyThi['tenMonHoc']); ?>
                         </p>
                     </div>
                     <div>
                         <a href="/quan-ly-ky-thi/thi-sinh/excel/nhap.php?kyThiId=<?php echo $kyThiId; ?>" class="btn btn-success">
-                            <i class="fas fa-file-import"></i> nhập excel
+                            <i class="fas fa-file-import"></i> Nhập Excel
                         </a>
                         <a href="/quan-ly-ky-thi/thi-sinh/?kyThiId=<?php echo $kyThiId; ?>" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> quay lại
+                            <i class="fas fa-arrow-left"></i> Quay Lại
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($errors)): ?>
-                        <div class="alert alert-danger mb-4">
-                            <ul class="mb-0">
-                                <?php foreach ($errors as $error): ?>
-                                    <li><?php echo $error; ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
+                        <?php 
+                        // Viết hoa chữ cái đầu cho từng dòng lỗi
+                        $errors = array_map(function($err) {
+                            return mb_strtoupper(mb_substr($err, 0, 1), 'UTF-8') . mb_substr($err, 1, null, 'UTF-8');
+                        }, $errors);
+                        $_SESSION['flash_message'] = implode('<br>', $errors); 
+                        $_SESSION['flash_type'] = 'danger'; 
+                        ?>
                     <?php endif; ?>
 
-                    <form method="POST">
+                    <form method="POST" id="formThemThiSinh">
                         <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">mã sinh viên:</label>
+                            <label class="col-sm-3 col-form-label">Mã sinh viên:</label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" name="maSinhVien" required
                                     value="<?php echo htmlspecialchars($_POST['maSinhVien'] ?? ''); ?>"
-                                    placeholder="nhập mã sinh viên...">
+                                    placeholder="Nhập mã sinh viên...">
                             </div>
                         </div>
 
                         <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">họ tên:</label>
+                            <label class="col-sm-3 col-form-label">Họ tên:</label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" name="hoTen" required
                                     value="<?php echo htmlspecialchars($_POST['hoTen'] ?? ''); ?>"
-                                    placeholder="nhập họ tên sinh viên...">
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label class="col-sm-3 col-form-label">ngành học:</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control" 
-                                    value="<?php echo htmlspecialchars($kyThi['tenNganh']); ?>" readonly>
-                                <small class="text-muted">ngành học được xác định theo môn học của kỳ thi</small>
+                                    placeholder="Nhập họ tên sinh viên...">
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-sm-9 offset-sm-3">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-plus"></i> thêm thí sinh
+                                <button type="submit" class="btn btn-primary" id="btnThemThiSinh">
+                                    <i class="fas fa-plus"></i> Thêm Thí Sinh
                                 </button>
                             </div>
                         </div>
@@ -242,5 +248,16 @@ include '../../include/layouts/header.php';
         </div>
     </div>
 </div>
+
+<script>
+const formThemThiSinh = document.getElementById('formThemThiSinh');
+const btnThemThiSinh = document.getElementById('btnThemThiSinh');
+if (formThemThiSinh && btnThemThiSinh) {
+    formThemThiSinh.addEventListener('submit', function(e) {
+        btnThemThiSinh.disabled = true;
+        btnThemThiSinh.innerHTML = `<span class=\"spinner-border spinner-border-sm\" aria-hidden=\"true\"></span> <span class=\"visually-hidden\" role=\"status\">Loading...</span>`;
+    });
+}
+</script>
 
 <?php include '../../include/layouts/footer.php'; ?> 

@@ -1,6 +1,6 @@
 <?php
 require_once '../include/config.php';
-
+$page_title = "Thống kê kỳ thi";
 if (!isset($_GET['kyThiId']) || empty($_GET['kyThiId'])) {
     $_SESSION['flash_message'] = 'id kỳ thi không hợp lệ!';
     $_SESSION['flash_type'] = 'danger';
@@ -9,9 +9,14 @@ if (!isset($_GET['kyThiId']) || empty($_GET['kyThiId'])) {
 }
 $kyThiId = $_GET['kyThiId'];
 
-// lấy thông tin kỳ thi
-$stmt = $pdo->prepare('SELECT k.*, m.tenMonHoc FROM kyThi k JOIN monHoc m ON k.monHocId = m.id WHERE k.id = ?');
-$stmt->execute([$kyThiId]);
+$isAdmin = isset($_SESSION['vai_tro']) && $_SESSION['vai_tro'] === 'admin';
+if ($isAdmin) {
+    $stmt = $pdo->prepare('SELECT k.*, m.tenMonHoc FROM kyThi k JOIN monHoc m ON k.monHocId = m.id WHERE k.id = ?');
+    $stmt->execute([$kyThiId]);
+} else {
+    $stmt = $pdo->prepare('SELECT k.*, m.tenMonHoc FROM kyThi k JOIN monHoc m ON k.monHocId = m.id WHERE k.id = ? AND k.nguoiTaoId = ?');
+    $stmt->execute([$kyThiId, $_SESSION['user_id']]);
+}
 $kyThi = $stmt->fetch();
 if (!$kyThi) {
     $_SESSION['flash_message'] = 'không tìm thấy kỳ thi!';
@@ -60,14 +65,17 @@ include '../include/layouts/header.php';
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i> Trang chủ</a></li>
         <li class="breadcrumb-item"><a href="/quan-ly-ky-thi">Quản lý kỳ thi</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Thống kê kỳ thi</li>
+        <li class="breadcrumb-item">
+            <a href="/quan-ly-ky-thi/dashboard.php?id=<?php echo $kyThi['id']; ?>">Kỳ thi: <?php echo htmlspecialchars($kyThi['id']); ?></a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Thống kê</li>
     </ol>
 </nav>
 
 <div class="container-fluid py-4">
     <div class="mb-4 d-flex justify-content-end">
-        <a href="/quan-ly-ky-thi/thong-ke-xuat.php?kyThiId=<?php echo $kyThiId; ?>" class="btn btn-success">
-            <i class="fas fa-print me-1"></i> xuất báo cáo
+        <a href="/quan-ly-ky-thi/thong-ke-xuat.php?kyThiId=<?php echo $kyThiId; ?>" class="btn btn-success" id="btnXuatBaoCao">
+            <i class="fas fa-print me-1"></i> Xuất Báo Cáo
         </a>
     </div>
     <div class="row mb-4">
@@ -75,7 +83,7 @@ include '../include/layouts/header.php';
             <div class="card text-center shadow">
                 <div class="card-body">
                     <div class="fs-2 fw-bold text-primary"><?php echo $soThiSinh; ?></div>
-                    <div class="text-muted">tổng số thí sinh</div>
+                    <div class="text-muted">Tổng Số Thí Sinh</div>
                 </div>
             </div>
         </div>
@@ -83,7 +91,7 @@ include '../include/layouts/header.php';
             <div class="card text-center shadow">
                 <div class="card-body">
                     <div class="fs-2 fw-bold text-success"><?php echo $soDeThi; ?></div>
-                    <div class="text-muted">tổng số đề thi</div>
+                    <div class="text-muted">Tổng Số Đề Thi</div>
                 </div>
             </div>
         </div>
@@ -91,15 +99,17 @@ include '../include/layouts/header.php';
             <div class="card text-center shadow">
                 <div class="card-body">
                     <div class="fs-2 fw-bold text-info"><?php echo $soBaiNop; ?></div>
-                    <div class="text-muted">bài thi đã nộp</div>
+                    <div class="text-muted">Bài Thi Đã Nộp</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="card text-center shadow">
                 <div class="card-body">
-                    <div class="fs-2 fw-bold text-warning"><?php echo number_format($thongKeDiem['diemTB'], 2); ?></div>
-                    <div class="text-muted">điểm trung bình</div>
+                    <div class="fs-2 fw-bold text-warning">
+                        <?php echo number_format($thongKeDiem['diemTB'] !== null ? $thongKeDiem['diemTB'] : 0, 2); ?>
+                    </div>
+                    <div class="text-muted">Điểm Trung Bình</div>
                 </div>
             </div>
         </div>
@@ -107,26 +117,26 @@ include '../include/layouts/header.php';
     <div class="row mb-4">
         <div class="col-md-6 mb-3">
             <div class="card shadow">
-                <div class="card-header bg-primary text-white">điểm cao nhất/thấp nhất</div>
+                <div class="card-header bg-primary text-white">Điểm Cao Nhất/Thấp Nhất</div>
                 <div class="card-body">
-                    <div>điểm cao nhất: <b><?php echo number_format($thongKeDiem['diemMax'], 2); ?></b></div>
-                    <div>điểm thấp nhất: <b><?php echo number_format($thongKeDiem['diemMin'], 2); ?></b></div>
+                    <div>Điểm Cao Nhất: <b><?php echo number_format($thongKeDiem['diemMax'] !== null ? $thongKeDiem['diemMax'] : 0, 2); ?></b></div>
+                    <div>Điểm Thấp Nhất: <b><?php echo number_format($thongKeDiem['diemMin'] !== null ? $thongKeDiem['diemMin'] : 0, 2); ?></b></div>
                 </div>
             </div>
         </div>
         <div class="col-md-6 mb-3">
             <div class="card shadow">
-                <div class="card-header bg-success text-white">top 10 thí sinh điểm cao nhất</div>
+                <div class="card-header bg-success text-white">Top 10 Thí Sinh Điểm Cao Nhất</div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-bordered mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>stt</th>
-                                    <th>mã sinh viên</th>
-                                    <th>họ tên</th>
-                                    <th>điểm</th>
-                                    <th>thời gian nộp</th>
+                                    <th>STT</th>
+                                    <th>Mã Sinh Viên</th>
+                                    <th>Họ Tên</th>
+                                    <th>Điểm</th>
+                                    <th>Thời Gian Nộp</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -140,7 +150,7 @@ include '../include/layouts/header.php';
                                 </tr>
                                 <?php endforeach; ?>
                                 <?php if (empty($topThiSinh)): ?>
-                                <tr><td colspan="5" class="text-center">chưa có dữ liệu</td></tr>
+                                <tr><td colspan="5" class="text-center">Chưa Có Dữ Liệu</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
@@ -150,5 +160,26 @@ include '../include/layouts/header.php';
         </div>
     </div>
 </div>
+
+<script>
+const btnXuatBaoCao = document.getElementById('btnXuatBaoCao');
+if (btnXuatBaoCao) {
+    btnXuatBaoCao.addEventListener('click', function(e) {
+        e.preventDefault();
+        const oldHtml = btnXuatBaoCao.innerHTML;
+        window.location.href = btnXuatBaoCao.getAttribute('href');
+        btnXuatBaoCao.classList.remove('btn-success');
+        btnXuatBaoCao.classList.add('btn-primary');
+        btnXuatBaoCao.innerHTML = `<span class=\"spinner-border spinner-border-sm\" aria-hidden=\"true\"></span> <span class=\"visually-hidden\" role=\"status\">Loading...</span>`;
+        btnXuatBaoCao.setAttribute('disabled', 'disabled');
+        setTimeout(function() {
+            btnXuatBaoCao.innerHTML = oldHtml;
+            btnXuatBaoCao.classList.remove('btn-primary');
+            btnXuatBaoCao.classList.add('btn-success');
+            btnXuatBaoCao.removeAttribute('disabled');
+        }, 3000);
+    });
+}
+</script>
 
 <?php include '../include/layouts/footer.php'; ?> 

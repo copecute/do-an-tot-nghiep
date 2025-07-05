@@ -28,15 +28,17 @@ if (!isset($_GET['kyThiId']) || empty($_GET['kyThiId'])) {
 $id = $_GET['id'];
 $kyThiId = $_GET['kyThiId'];
 
+$isAdmin = isset($_SESSION['vai_tro']) && $_SESSION['vai_tro'] === 'admin';
+
 try {
     // kiểm tra số báo danh tồn tại và thuộc về người dùng
-    $stmt = $pdo->prepare('
-        SELECT s.*, k.nguoiTaoId 
-        FROM soBaoDanh s
-        JOIN kyThi k ON s.kyThiId = k.id
-        WHERE s.id = ? AND k.nguoiTaoId = ?
-    ');
-    $stmt->execute([$id, $_SESSION['user_id']]);
+    if ($isAdmin) {
+        $stmt = $pdo->prepare('SELECT s.*, k.nguoiTaoId FROM soBaoDanh s JOIN kyThi k ON s.kyThiId = k.id WHERE s.id = ?');
+        $stmt->execute([$id]);
+    } else {
+        $stmt = $pdo->prepare('SELECT s.*, k.nguoiTaoId FROM soBaoDanh s JOIN kyThi k ON s.kyThiId = k.id WHERE s.id = ? AND k.nguoiTaoId = ?');
+        $stmt->execute([$id, $_SESSION['user_id']]);
+    }
     $soBaoDanh = $stmt->fetch();
 
     if (!$soBaoDanh) {
