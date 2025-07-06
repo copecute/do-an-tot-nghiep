@@ -28,7 +28,7 @@ endif
 |Quản trị viên|
 if (Muốn sửa tài khoản?) then (Có)
     :Chọn tài khoản cần sửa;
-    
+
     |Hệ thống|
     :Hiển thị thông tin tài khoản;
 
@@ -62,6 +62,40 @@ if (Muốn xoá tài khoản?) then (Có)
         :Xoá khỏi hệ thống;
         :Thông báo "Xoá thành công";
     endif
+endif
+
+|Quản trị viên|
+if (Muốn tìm kiếm & lọc?) then (Có)
+    :Nhập từ khóa tìm kiếm hoặc bộ lọc;
+    |Hệ thống|
+    :Truy vấn CSDL theo điều kiện;
+    :Hiển thị danh sách kết quả;
+endif
+
+|Quản trị viên|
+if (Muốn nhập Excel?) then (Có)
+    :Chọn file Excel;
+    :Nhấn "Nhập";
+
+    |Hệ thống|
+    :Kiểm tra định dạng và dữ liệu;
+
+    if (Dữ liệu hợp lệ?) then (Không)
+        :Thông báo lỗi nhập;
+    else (Có)
+        :Lưu vào CSDL;
+        :Hiển thị "Nhập thành công";
+    endif
+endif
+
+|Quản trị viên|
+if (Muốn xuất Excel?) then (Có)
+    :Nhấn "Xuất Excel";
+
+    |Hệ thống|
+    :Truy xuất danh sách tài khoản;
+    :Tạo file Excel;
+    :Cung cấp file tải xuống;
 endif
 
 |Quản trị viên|
