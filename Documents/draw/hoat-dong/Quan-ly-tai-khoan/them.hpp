@@ -1,14 +1,17 @@
 @startuml
-|Quản trị viên|
+|Người dùng|
 start
 :Đăng nhập vào hệ thống;
 :Chọn "Quản lý tài khoản";
+|Hệ thống|
+:Hiển thị giao diện quản lý tài khoản;
+|Người dùng|
 :Chọn "Thêm tài khoản";
 
 |Hệ thống|
 :Hiển thị form nhập thông tin;
 
-|Quản trị viên|
+|Người dùng|
 :Nhập thông tin tài khoản;
 :Nhấn "Thêm";
 

@@ -3,6 +3,9 @@
 start
 :Đăng nhập vào hệ thống;
 :Chọn "Đổi mật khẩu" từ menu cá nhân;
+|Hệ thống|
+:hiển thị form đổi mật khẩu;
+|Người dùng|
 :Nhập mật khẩu cũ và mật khẩu mới;
 :Nhấn "Lưu thay đổi";
 

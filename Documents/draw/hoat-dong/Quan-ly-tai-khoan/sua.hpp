@@ -1,14 +1,17 @@
 @startuml
-|Quản trị viên|
+|Người dùng|
 start
 :Đăng nhập vào hệ thống;
 :Chọn "Quản lý tài khoản";
+|Hệ thống|
+:Hiển thị giao diện quản lý tài khoản;
+|Người dùng|
 :Chọn tài khoản cần sửa;
 
 |Hệ thống|
 :Hiển thị thông tin tài khoản;
 
-|Quản trị viên|
+|Người dùng|
 :Chỉnh sửa thông tin;
 :Nhấn "Lưu thay đổi";
 

@@ -1,8 +1,11 @@
 @startuml
-|Quản trị viên|
+|Người dùng|
 start
 :Đăng nhập vào hệ thống;
 :Chọn "Quản lý tài khoản";
+|Hệ thống|
+:Hiển thị giao diện quản lý tài khoản;
+|Người dùng|
 :Chọn chức năng "Nhập Excel";
 :Chọn file và nhấn "Nhập";
 
