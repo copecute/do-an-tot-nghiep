@@ -13,8 +13,7 @@ DB --> System: Dữ liệu trả về
 
 alt Có dữ liệu
     System -> System: Tổng hợp thống kê
-    System -> UI: Hiển thị bảng + biểu đồ
-    UI -> User
+    System -> UI: Hiển thị dữ liệu thống kê
 
     alt Người dùng muốn xuất báo cáo
         User -> UI: Nhấn "Xuất báo cáo"
