@@ -109,11 +109,11 @@ class _LoginScreenState extends State<LoginScreen> with WindowListener {
         }
       } else {
         setState(() {
-          _errorMessage = data['message'] ?? 'Đăng nhập thất bại';
+          _errorMessage = data['message'] ?? 'Xác thực thất bại';
         });
       }
     } catch (e, stack) {
-      print('Lỗi đăng nhập: $e');
+      print('Lỗi: $e');
       print(stack);
       setState(() {
         _errorMessage = 'Lỗi: ${e.toString()}';
@@ -153,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> with WindowListener {
               const SizedBox(height: 32),
               Center(
                 child: Text(
-                  'Đăng nhập',
+                  'Xác thực thí sinh',
                   style: FluentTheme.of(context).typography.titleLarge,
                 ),
               ),
@@ -202,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> with WindowListener {
                                 child: ProgressRing(),
                               ),
                               SizedBox(width: 8),
-                              Text('Đang đăng nhập...'),
+                              Text('Đang xác thực...'),
                             ],
                           )
                         : const Text('Kiểm tra thông tin'),
